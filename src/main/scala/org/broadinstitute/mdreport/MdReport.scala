@@ -19,8 +19,8 @@ object MdReport extends App{
   def parser = {
     new scopt.OptionParser[Config]("MdReport") {
       head("MdReport", "1.0")
-      opt[String]('i', "sampleId").valueName("<id>").optional().action((x,c) => c.copy(sampleId = x))
-        .text("The ID of the sample to update metrics for. Must supply this or an entry file.")
+      opt[String]('i', "analysisId").valueName("<id>").optional().action((x,c) => c.copy(analysisId = x))
+        .text("The ID of the analysis to retrieve metrics for. Must supply this or an entry file.")
       opt[Long]('v', "version").valueName("version").optional().action((x,c) => c.copy(version = x))
         .text("Optional version string for the entry.")
       opt[String]('e', "entryFile").optional().action((x, c) => c.copy(entryFile = x))
@@ -38,7 +38,7 @@ object MdReport extends App{
       if (config.entryFile.length > 0) {
         val json = Source.fromFile(config.entryFile).getLines().next()
         val mapper = JacksMapper.readValue[Map[String, String]](json)
-        config.sampleId = mapper("id")
+        config.analysisId = mapper("id")
         config.version = mapper("version").toLong
         execute(config)
       }
@@ -49,10 +49,9 @@ object MdReport extends App{
     System.exit(1)
   }
   def execute(config: Config): Unit = {
-    println(config)
-    val rm = new RetrieveMetrics(config.sampleId, config.version)
+    val rm = new RetrieveMetrics(config.analysisId, config.version)
     val metrics = rm.retrieve()
-    val id = config.sampleId
+    val id = config.analysisId
     val version = config.version
     val outDir = config.outDir
     val pw = new PrintWriter(s"$outDir/$id.$version.MdReport.csv")

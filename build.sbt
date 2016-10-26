@@ -15,6 +15,7 @@ libraryDependencies ++= Seq(
   "com.typesafe.akka" %% "akka-http-experimental" % "2.4.5",
   "org.json4s" %% "json4s-jackson" % "3.2.11",
   "com.lambdaworks" %% "jacks" % "2.3.3",
+  "com.norbitltd" %% "spoiwo" % "1.1.1",
   "com.github.scopt" %% "scopt" % "3.5.0"
 )
 
