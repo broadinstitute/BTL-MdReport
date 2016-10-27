@@ -7,11 +7,11 @@ import org.broadinstitute.mdreport.ReporterTraits._
   */
 object Reporters {
 
-  class SmartSeqReporter() extends Identity with SampleList with Query {
-    val id = ""
-    val version: Option[Long] = Some(1.toLong)
-    val sampleList = List()
-    def run() = query(id, version, sampleList )
-  }
+//  class SmartSeqReporter() extends Identity with SampleList with Query {
+//    val id = ""
+//    //val version: Option[Long] = Some(1.toLong)
+//    val sampleList = List()
+//    def run() = query(id, version, sampleList )
+//  }
 
 }

@@ -9,16 +9,16 @@ import org.broadinstitute.MD.rest.MetricsQuery.SampleMetricsRequest
   */
 object ReporterTraits {
 
-  trait Identity {
-    val id: String
-    val version: Long
-  }
-
-  trait SampleList {
-    val samples = List[SampleMetricsRequest]
-  }
-
-  trait Query {
-    def query = MetricsQuery
-  }
+//  trait Identity {
+//    val id: String
+//    val version: Long
+//  }
+//
+//  trait SampleList {
+//    //val samples = List[SampleMetricsRequest]
+//  }
+//
+//  trait Query {
+//    def query = MetricsQuery
+//  }
 }
