@@ -5,6 +5,9 @@ import akka.stream.ActorMaterializer
 import com.lambdaworks.jacks.JacksMapper
 import com.typesafe.scalalogging.Logger
 import java.io.PrintWriter
+
+import org.broadinstitute.MD.rest.MetricsQuery.SampleMetricsRequest
+
 import scala.io.Source
 
 /**
@@ -49,7 +52,6 @@ object MdReport extends App{
     System.exit(1)
   }
   def execute(config: Config): Unit = {
-    println(config)
     val rm = new RetrieveMetrics(config.setId, config.version)
     val metrics = rm.retrieve()
     val id = config.setId
