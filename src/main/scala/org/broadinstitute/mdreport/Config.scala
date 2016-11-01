@@ -7,7 +7,7 @@ import org.broadinstitute.MD.types.metrics.PicardAlignmentSummaryAnalysis
   */
 case class Config(
                   var setId: String = "",
-                  var version: Long = -999,
+                  var version: Long = -999L,
                   entryFile: String = "",
                   outDir: String = "",
                   metricsList: String = ""

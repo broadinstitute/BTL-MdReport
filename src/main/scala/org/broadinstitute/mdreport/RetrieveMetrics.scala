@@ -30,7 +30,7 @@ class RetrieveMetrics (id: String, version: Long) {
   def retrieve(): List[String] = {
     val request = new Request().doRequest(path, json)
     val response = request.flatMap(response => Unmarshal(response.entity).to[List[BaseJson]])
-    val metrics = Await.result(response, 5 seconds)
+    val metrics = Await.result(response, 10 seconds)
     extract(metrics)
 
   }
