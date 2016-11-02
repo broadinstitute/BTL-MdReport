@@ -5,9 +5,6 @@ import akka.stream.ActorMaterializer
 import com.lambdaworks.jacks.JacksMapper
 import com.typesafe.scalalogging.Logger
 import java.io.PrintWriter
-
-import org.broadinstitute.MD.rest.MetricsQuery.SampleMetricsRequest
-
 import scala.io.Source
 
 /**
@@ -30,6 +27,10 @@ object MdReport extends App{
         .text("If EntryCreator was used you may supply the entry file to pass along sampleId and version.")
       opt[String]('o',"outDir").valueName("<outDir>").required().action((x, c) => c.copy(outDir = x))
         .text("The directory to write the report to.")
+      opt[String]('s', "sampleList").valueName("<sampleList>").optional().action((x, c) => c.copy(sampleList = x))
+        .text("A comma-separated list of sampleIds to include in the report.")
+      opt[String]('t', "test").hidden().action((_, c) => c.copy(test = true))
+        .text("Enable test mode which retrieves reports from MDBeta.")
       help("help").text("Prints this help text.")
       note("\nA tool for generating reports from MD.")
     }
@@ -52,7 +53,7 @@ object MdReport extends App{
     System.exit(1)
   }
   def execute(config: Config): Unit = {
-    val rm = new RetrieveMetrics(config.setId, config.version)
+    val rm = new RetrieveMetrics(config.setId, config.version, config.test)
     val metrics = rm.retrieve()
     val id = config.setId
     val version = config.version
