@@ -7,7 +7,7 @@ import org.scalatest.{FlatSpec, Matchers}
 class RetrieveMetricsSpec extends FlatSpec with Matchers {
 
   "RetrieveMetrics" should "return a list of expected metrics with non-default versioning" in {
-    val rm = new RetrieveMetrics("EntryCreatorSystemTest1", 1, true)
+    val rm = new RetrieveMetrics("EntryCreatorSystemTest1", Some(1L), true)
     val metrics = rm.retrieve()
     val expected = List(",ErccStats,,,,,,PicardMeanQualByCycle,,PicardReadGcMetrics," +
       "RnaSeqQcStats,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,PicardAlignmentSummaryAnalysis" +
@@ -55,7 +55,7 @@ class RetrieveMetricsSpec extends FlatSpec with Matchers {
     metrics should contain theSameElementsAs expected
   }
   it should "return a list of expected metrics with default versioning" in {
-    val rm = new RetrieveMetrics("SSF-1859", 1477612237045L, true)
+    val rm = new RetrieveMetrics("SSF-1859", Some(1477612237045L), true)
     val metrics = rm.retrieve()
     val expected = List (",ErccStats,,,,,,PicardInsertSizeMetrics,,,,,,,,,,,,,,,,,,PicardMeanQualByCycle,,PicardAlignmentSummaryAnalysis,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,RnaSeqQcStats,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,",
       ",fractionErccReads,fractionGenomeReferenceReads,totalReads,totalUnalignedReads,fractionUnalignedReads,totalErccReads,widthOf70Pct,widthOf40Pct,meanInsertSize,widthOf10Pct,widthOf30Pct,widthOf50Pct,widthOf90Pct,readPairs,widthOf99Pct,maxInsertSize,medianAbsoluteDeviation,pairOrientation,widthOf20Pct,medianInsertSize,minInsertSize,standardDeviation,widthOf80Pct,widthOf60Pct,r2MeanQual,r1MeanQual,PicardAlignmentSummaryMetrics,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,readMetrics,,,,,,,,,,,covMetrics,,alignmentMetrics,,,,,,,,,,gapMetrics,,,annotationMetrics,,,,,,,endMetrics,,,,,,,,,,note,sample",

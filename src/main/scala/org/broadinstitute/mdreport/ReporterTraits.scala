@@ -15,18 +15,10 @@ object ReporterTraits {
   trait Metrics {
     val setId: String
     val setVersion: Option[Long]
-    val metrics: List[MetricsType]
+    val metrics: List[MetricsType.MetricsType]
   }
 
   trait Samples {
-    val sampleList: List[String]
-    val sampleRequests: List[SampleMetricsRequest]
-    val sampleRefs: List[SampleRef]
-    def makeSampleRef(setId: String, sampleId: String): SampleRef = {
-      SampleRef(sampleID = sampleId, setID = setId)
-    }
-    def makeSampleRequest(sampleRef: SampleRef, metrics: List[MetricsType]): SampleMetricsRequest = {
-      SampleMetricsRequest(sampleRef, metrics)
-    }
+    val sampleList: Iterator[String]
   }
 }

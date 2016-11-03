@@ -5,10 +5,10 @@ package org.broadinstitute.mdreport
   */
 case class Config(
                   var setId: String = "",
-                  var version: Long = -999L,
+                  var version: Option[Long] = None,
                   entryFile: String = "",
                   outDir: String = "",
                   metricsList: String = "",
-                  sampleList: String = "",
+                  sampleList: Iterator[String] = Iterator(),
                   test: Boolean = false
                  )
