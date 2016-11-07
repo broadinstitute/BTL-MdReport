@@ -5,7 +5,8 @@ import org.broadinstitute.MD.rest.MetricsQuery
 import org.broadinstitute.MD.rest.MetricsQuery.SampleMetricsRequest
 import org.broadinstitute.MD.types.SampleRef
 import org.broadinstitute.MD.types.metrics.MetricsType
-import org.broadinstitute.MD.types.metrics.MetricsType.MetricsType
+import scala.annotation.tailrec
+import scala.collection.mutable.ListBuffer
 
 /**
   * Created by amr on 10/26/2016.
@@ -16,9 +17,55 @@ object ReporterTraits {
     val setId: String
     val setVersion: Option[Long]
     val metrics: List[MetricsType.MetricsType]
+
+    def makeMetricsQuery(sr: ListBuffer[SampleMetricsRequest]): MetricsQuery = {
+      MetricsQuery(
+        id = setId,
+        version = setVersion,
+        sampleRequests = sr.toList
+      )
+    }
   }
 
   trait Samples {
     val sampleList: Iterator[String]
+
+    def makeSampleRefs(srefs: ListBuffer[SampleRef], setId: String): ListBuffer[SampleRef] = {
+      @tailrec
+      def refAccumulator(srefs: ListBuffer[SampleRef]): ListBuffer[SampleRef] = {
+        if (sampleList.hasNext) {
+          srefs += SampleRef(sampleID = sampleList.next(), setID = setId)
+          refAccumulator(srefs)
+        } else {
+          srefs
+        }
+      }
+      refAccumulator(srefs)
+    }
+
+    def makeSampleRequests(sr: Iterator[SampleRef], metrics: List[MetricsType.MetricsType],
+                           sreqs: ListBuffer[SampleMetricsRequest]): ListBuffer[SampleMetricsRequest] = {
+      @tailrec
+      def reqAccumulator(sreqs: ListBuffer[SampleMetricsRequest]): ListBuffer[SampleMetricsRequest] = {
+        if (sr.hasNext) {
+          sreqs += SampleMetricsRequest(sampleRef = sr.next(), metrics = metrics)
+          reqAccumulator(sreqs)
+        } else {
+          sreqs
+        }
+      }
+      reqAccumulator(sreqs)
+    }
+  }
+
+  trait Query {
+    val path: String
+    val mq: MetricsQuery
+
+    def doQuery() = {
+      val request = new Request()
+      val json = MetricsQuery.writeJson(mq)
+      request.doRequest(path = path, json = json)
+    }
   }
 }

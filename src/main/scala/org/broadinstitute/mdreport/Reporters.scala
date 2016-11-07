@@ -13,7 +13,7 @@ import scala.collection.mutable.ListBuffer
   */
 object Reporters {
 
-  class SmartSeqReporter(config: Config) extends Metrics with Samples {
+  class SmartSeqReporter(config: Config) extends Metrics with Samples with Query{
     val setId = config.setId
     val setVersion = config.version
     val sampleList = config.sampleList
@@ -25,43 +25,18 @@ object Reporters {
       MetricsType.ErccStats,
       MetricsType.RnaSeqQcStats
     )
-
-    def makeSampleRefs(srefs: ListBuffer[SampleRef]): ListBuffer[SampleRef] = {
-      @tailrec
-      def refAccumulator(srefs: ListBuffer[SampleRef]): ListBuffer[SampleRef] = {
-        if (sampleList.hasNext) {
-          srefs += SampleRef(sampleID = sampleList.next(), setID = setId)
-          refAccumulator(srefs)
-        } else {
-          srefs
-        }
-      }
-      refAccumulator(srefs)
-    }
-
-    def makeSampleRequests(sr: Iterator[SampleRef],
-                           sreqs: ListBuffer[SampleMetricsRequest]):ListBuffer[SampleMetricsRequest] = {
-      @tailrec
-      def reqAccumulator(sreqs: ListBuffer[SampleMetricsRequest]):ListBuffer[SampleMetricsRequest] = {
-        if (sr.hasNext) {
-          sreqs += SampleMetricsRequest(sampleRef = sr.next(), metrics = metrics)
-          reqAccumulator(sreqs)
-        } else {
-          sreqs
-        }
-      }
-      reqAccumulator(sreqs)
-    }
-
+    val sampleRefs = makeSampleRefs(setId = setId,
+      srefs = scala.collection.mutable.ListBuffer[SampleRef]()).toIterator
+    val sampleRequests = makeSampleRequests(sr = sampleRefs,
+      metrics = metrics,
+      sreqs = scala.collection.mutable.ListBuffer[SampleMetricsRequest]())
+    val mq = makeMetricsQuery(sampleRequests)
+    var port = 9100
+    if (config.test) port = 9101
+    val path = s"http://btllims.broadinstitute.org:$port/MD/findMetrics"
     def run() = {
-      val sampleRefs = makeSampleRefs(scala.collection.mutable.ListBuffer[SampleRef]()).toIterator
-      val sampleRequests = makeSampleRequests(sampleRefs,
-        scala.collection.mutable.ListBuffer[SampleMetricsRequest]())
-      val mq = MetricsQuery(
-        id = setId,
-        version = setVersion,
-        sampleRequests = sampleRequests.toList
-      )
+      doQuery()
+      //TODO: Write returned object to some file
     }
   }
 }
