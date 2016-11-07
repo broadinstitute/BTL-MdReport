@@ -27,7 +27,7 @@ object MdReport extends App{
         .text("If EntryCreator was used you may supply the entry file to pass along sampleId and version.")
       opt[String]('o',"outDir").valueName("<outDir>").required().action((x, c) => c.copy(outDir = x))
         .text("The directory to write the report to.")
-      opt[String]('s', "sampleList").valueName("<sampleList>").optional().action((x, c) => c.copy(sampleList = x.split(',').toIterator))
+      opt[String]('s', "sampleList").valueName("<sampleList>").optional().action((x, c) => c.copy(sampleList = x.split(',').toList))
         .text("A comma-separated list of sampleIds to include in the report.")
       opt[String]('t', "test").hidden().action((_, c) => c.copy(test = true))
         .text("Enable test mode which retrieves reports from MDBeta.")

@@ -1,10 +1,11 @@
 package org.broadinstitute.mdreport
-import com.norbitltd.spoiwo.model.{Row, Sheet}
+import com.norbitltd.spoiwo.model.{Row, Sheet, Workbook}
 import com.norbitltd.spoiwo.natures.xlsx.Model2XlsxConversions._
 import org.broadinstitute.MD.rest.MetricsQuery
 import org.broadinstitute.MD.rest.MetricsQuery.SampleMetricsRequest
 import org.broadinstitute.MD.types.SampleRef
 import org.broadinstitute.MD.types.metrics.MetricsType
+
 import scala.annotation.tailrec
 import scala.collection.mutable.ListBuffer
 
@@ -28,13 +29,14 @@ object ReporterTraits {
   }
 
   trait Samples {
-    val sampleList: Iterator[String]
+    val sampleList: List[String]
+    val iter = sampleList.toIterator
 
     def makeSampleRefs(srefs: ListBuffer[SampleRef], setId: String): ListBuffer[SampleRef] = {
       @tailrec
       def refAccumulator(srefs: ListBuffer[SampleRef]): ListBuffer[SampleRef] = {
-        if (sampleList.hasNext) {
-          srefs += SampleRef(sampleID = sampleList.next(), setID = setId)
+        if (iter.hasNext) {
+          srefs += SampleRef(sampleID = iter.next(), setID = setId)
           refAccumulator(srefs)
         } else {
           srefs
@@ -60,12 +62,19 @@ object ReporterTraits {
 
   trait Query {
     val path: String
-    val mq: MetricsQuery
 
-    def doQuery() = {
+    def doQuery(mq: MetricsQuery) = {
       val request = new Request()
       val json = MetricsQuery.writeJson(mq)
       request.doRequest(path = path, json = json)
+    }
+  }
+
+  trait Output {
+    val bookName: String
+    val workbook =  Workbook().saveAsXlsx(bookName)
+    def makeWorkbook = {
+
     }
   }
 }

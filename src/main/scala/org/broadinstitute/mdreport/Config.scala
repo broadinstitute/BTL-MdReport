@@ -9,6 +9,6 @@ case class Config(
                   entryFile: String = "",
                   outDir: String = "",
                   metricsList: String = "",
-                  sampleList: Iterator[String] = Iterator(),
+                  sampleList: List[String] = List(),
                   test: Boolean = false
                  )

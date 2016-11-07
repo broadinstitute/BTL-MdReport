@@ -5,6 +5,10 @@ import org.broadinstitute.MD.types.metrics.MetricsType
 import org.broadinstitute.mdreport.Config
 import org.broadinstitute.mdreport.Reporters._
 import org.broadinstitute.MD.rest.MetricsQuery.SampleMetricsRequest
+import scala.concurrent.duration._
+import scala.concurrent.Await
+import akka.http.scaladsl.model.StatusCodes._
+
 /**
   * Created by amr on 11/2/2016.
   */
@@ -15,7 +19,8 @@ class ReportersSpec extends FlatSpec with Matchers{
     val config = Config(
       setId = "SSF-1859",
       version = Some(7),
-      sampleList = Iterator("SSF1859B12_A375_AkiYoda", "SSF1859A11_A375_AkiYoda")
+      test = true,
+      sampleList = List("SSF1859B12_A375_AkiYoda", "SSF1859A11_A375_AkiYoda")
     )
     val ssr = new SmartSeqReporter(config)
     ssr.metrics should contain allOf (MetricsType.PicardAlignmentSummaryAnalysis,
@@ -23,13 +28,13 @@ class ReportersSpec extends FlatSpec with Matchers{
       MetricsType.ErccStats, MetricsType.RnaSeqQcStats)
     ssr.setId should be ("SSF-1859")
     ssr.setVersion should be (Some(7))
-    ssr.sampleList.toList should contain allOf("SSF1859B12_A375_AkiYoda", "SSF1859A11_A375_AkiYoda")
+    ssr.sampleList should contain allOf("SSF1859B12_A375_AkiYoda", "SSF1859A11_A375_AkiYoda")
   }
   it should "produce a correct sampleRefs" in {
     val config = Config(
       setId = "SSF-1859",
       version = Some(7),
-      sampleList = Iterator("SSF1859B12_A375_AkiYoda", "SSF1859A11_A375_AkiYoda")
+      sampleList = List("SSF1859B12_A375_AkiYoda", "SSF1859A11_A375_AkiYoda")
     )
     val ssr = new SmartSeqReporter(config)
     ssr.makeSampleRefs(setId = ssr.setId,
@@ -43,7 +48,7 @@ class ReportersSpec extends FlatSpec with Matchers{
     val config = Config(
       setId = "SSF-1859",
       version = Some(7),
-      sampleList = Iterator("SSF1859B12_A375_AkiYoda", "SSF1859A11_A375_AkiYoda")
+      sampleList = List("SSF1859B12_A375_AkiYoda", "SSF1859A11_A375_AkiYoda")
     )
     val ssr = new SmartSeqReporter(config)
     val sref = ssr.makeSampleRefs(setId = ssr.setId,
@@ -66,7 +71,7 @@ class ReportersSpec extends FlatSpec with Matchers{
       val config = Config(
         setId = "SSF-1859",
         version = Some(7),
-        sampleList = Iterator("SSF1859B12_A375_AkiYoda", "SSF1859A11_A375_AkiYoda")
+        sampleList = List("SSF1859B12_A375_AkiYoda", "SSF1859A11_A375_AkiYoda")
       )
       val ssr = new SmartSeqReporter(config)
       val sref = ssr.makeSampleRefs(setId = ssr.setId,
@@ -91,5 +96,16 @@ class ReportersSpec extends FlatSpec with Matchers{
         )
       )
     )
-  }
+    }
+//  it should "return a response when doQuery is called" in {
+//    val config = Config(
+//      setId = "SSF-1859",
+//      version = Some(7),
+//      sampleList = List("SSF1859B12_A375_AkiYoda", "SSF1859A11_A375_AkiYoda")
+//    )
+//    val ssr = new SmartSeqReporter(config)
+//    val response = ssr.run()
+//    val result = Await.result(response, 5 seconds)
+//    result shouldBe OK
+//  }
 }
