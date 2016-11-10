@@ -10,7 +10,7 @@ import org.broadinstitute.mdreport.ReporterTraits._
   */
 object Reporters {
 
-  class SmartSeqReporter(config: Config) extends Metrics with Samples with Query with Output{
+  class SmartSeqReporter(config: Config) extends Metrics with Samples with Query with Output {
     val setId = config.setId
     val setVersion = config.version
     val sampleList = config.sampleList
@@ -26,7 +26,7 @@ object Reporters {
     var port = 9100
     if (config.test) port = 9101
     //This path below needs to be corrected, Thaniel can help.
-    val path = s"http://btllims.broadinstitute.org:$port/MD/find"
+    val path = s"http://btllims.broadinstitute.org:$port/MD/metricsQuery"
 
     def run() = {
       val sampleRefs = makeSampleRefs(setId = setId,
@@ -38,7 +38,7 @@ object Reporters {
       doQuery(mq)
       //TODO: Convert returned object to SPOIWO-compliant data
       //TODO: Write converted data to workbook
-      makeWorkbook
+      //makeWorkbook
     }
   }
 }

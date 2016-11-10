@@ -1,6 +1,9 @@
+import akka.actor.ActorSystem
+import akka.http.scaladsl.unmarshalling.Unmarshal
+import akka.stream.ActorMaterializer
 import org.scalatest.{FlatSpec, Matchers}
-import org.broadinstitute.MD.rest.MetricsQuery
-import org.broadinstitute.MD.types.SampleRef
+import org.broadinstitute.MD.rest.{MetricsQuery, SampleMetrics}
+import org.broadinstitute.MD.types.{BaseJson, SampleRef}
 import org.broadinstitute.MD.types.metrics.MetricsType
 import org.broadinstitute.mdreport.Config
 import org.broadinstitute.mdreport.Reporters._
@@ -8,7 +11,6 @@ import org.broadinstitute.MD.rest.MetricsQuery.SampleMetricsRequest
 import scala.concurrent.duration._
 import scala.concurrent.Await
 import akka.http.scaladsl.model.StatusCodes._
-
 /**
   * Created by amr on 11/2/2016.
   */
@@ -19,7 +21,6 @@ class ReportersSpec extends FlatSpec with Matchers{
     val config = Config(
       setId = "SSF-1859",
       version = Some(7),
-      test = true,
       sampleList = List("SSF1859B12_A375_AkiYoda", "SSF1859A11_A375_AkiYoda")
     )
     val ssr = new SmartSeqReporter(config)
@@ -97,15 +98,17 @@ class ReportersSpec extends FlatSpec with Matchers{
       )
     )
     }
-//  it should "return a response when doQuery is called" in {
-//    val config = Config(
-//      setId = "SSF-1859",
-//      version = Some(7),
-//      sampleList = List("SSF1859B12_A375_AkiYoda", "SSF1859A11_A375_AkiYoda")
-//    )
-//    val ssr = new SmartSeqReporter(config)
-//    val response = ssr.run()
-//    val result = Await.result(response, 5 seconds)
-//    result shouldBe OK
-//  }
+  it should "return a response when doQuery is called" in {
+    val config = Config(
+      setId = "SSF-1859",
+      version = Some(7),
+      test = true,
+      sampleList = List("SSF1859B12_A375_AkiYoda", "SSF1859A11_A375_AkiYoda")
+    )
+    val ssr = new SmartSeqReporter(config)
+    val response = ssr.run()
+    val result = Await.result(response, 5 seconds)
+    println(result.entity.contentType)
+    result.status shouldBe OK
+  }
 }

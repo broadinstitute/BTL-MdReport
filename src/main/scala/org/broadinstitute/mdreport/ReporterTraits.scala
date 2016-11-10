@@ -30,9 +30,9 @@ object ReporterTraits {
 
   trait Samples {
     val sampleList: List[String]
-    val iter = sampleList.toIterator
 
     def makeSampleRefs(srefs: ListBuffer[SampleRef], setId: String): ListBuffer[SampleRef] = {
+      val iter = sampleList.toIterator
       @tailrec
       def refAccumulator(srefs: ListBuffer[SampleRef]): ListBuffer[SampleRef] = {
         if (iter.hasNext) {
@@ -71,10 +71,9 @@ object ReporterTraits {
   }
 
   trait Output {
-    val bookName: String
-    val workbook =  Workbook().saveAsXlsx(bookName)
-    def makeWorkbook = {
-
-    }
+//    val bookName: String
+//    val workbook =  Workbook().saveAsXlsx(bookName)
+//    def makeWorkbook = {
+//    }
   }
 }
