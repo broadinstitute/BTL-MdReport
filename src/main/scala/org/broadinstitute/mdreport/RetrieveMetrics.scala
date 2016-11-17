@@ -9,7 +9,7 @@ import scala.concurrent.duration._
 import scala.concurrent.Await
 import org.broadinstitute.MD.types.BaseJson
 import org.broadinstitute.MD.types.metrics.Metrics
-import org.broadinstitute.MD.rest.SampleMetrics
+
 
 /**
   * Created by Amr on 10/21/2016.
