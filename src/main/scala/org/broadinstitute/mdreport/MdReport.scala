@@ -14,8 +14,8 @@ object MdReport extends App{
   implicit lazy val system = ActorSystem()
   implicit lazy val materializer = ActorMaterializer()
   implicit lazy val ec = system.dispatcher
-
-  val logger =Logger("MdReport")
+  private val logger = Logger("MdReport")
+  private val reporters = List("SmartSeqReporter")
   def parser = {
     new scopt.OptionParser[Config]("MdReport") {
       head("MdReport", "1.0")
@@ -29,6 +29,8 @@ object MdReport extends App{
         .text("The directory to write the report to.")
       opt[String]('s', "sampleList").valueName("<sampleList>").optional().action((x, c) => c.copy(sampleList = x.split(',').toList))
         .text("A comma-separated list of sampleIds to include in the report.")
+      opt[String]('r', "reporter").valueName("<reporter>").optional().action((x,c) => c.copy(preset = Some(x)))
+        .text("Use one reporter preset from the following:".concat(reporters.toString()))
       opt[String]('t', "test").hidden().action((_, c) => c.copy(test = true))
         .text("Enable test mode which retrieves reports from MDBeta.")
       help("help").text("Prints this help text.")
@@ -45,6 +47,7 @@ object MdReport extends App{
         config.setId = mapper("id")
         config.version = Some(mapper("version").toLong)
       }
+      logger.info(s"Config: ${config.toString}")
       execute(config)
     case None => failureExit("Please provide valid input.")
   }
@@ -53,14 +56,26 @@ object MdReport extends App{
     System.exit(1)
   }
   def execute(config: Config): Unit = {
-    val rm = RetrieveMetrics
-    val metrics = rm.retrieve(config.setId, config.version, config.test)
-    val id = config.setId
-    val version = config.version
-    val outDir = config.outDir
-    val pw = new PrintWriter(s"$outDir/$id.$version.MdReport.csv")
-    for (m <- metrics) pw.write(m + "\n")
-    pw.close()
-    System.exit(0)
+    config.preset match {
+        case Some(p) => p match {
+          case "SmartSeqReporter" => val ssr = new Reporters.SmartSeqReporter(config)
+            ssr.run()
+          case _ => failureExit("Unrecognized reporter preset specified.")
+        }
+        case None =>
+          val rm = RetrieveMetrics
+          val metrics = rm.retrieve(config.setId, config.version, config.test)
+          val id = config.setId
+          val version = config.version
+          val outDir = config.outDir
+          version match {
+            case Some(v) =>
+              val pw = new PrintWriter(s"$outDir/$id.$v.MdReport.csv")
+              for (m <- metrics) pw.write(m + "\n")
+              pw.close()
+              System.exit(0)
+            case None => failureExit("Metrics version not specified.")
+      }
+    }
   }
 }

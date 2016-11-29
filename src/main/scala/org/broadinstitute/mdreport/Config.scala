@@ -6,6 +6,7 @@ package org.broadinstitute.mdreport
 case class Config(
                   var setId: String = "",
                   var version: Option[Long] = None,
+                  preset: Option[String] = None,
                   entryFile: String = "",
                   outDir: String = "",
                   metricsList: String = "",

@@ -1,11 +1,8 @@
 package org.broadinstitute.mdreport
-import com.norbitltd.spoiwo.model.{Row, Sheet, Workbook}
-import com.norbitltd.spoiwo.natures.xlsx.Model2XlsxConversions._
 import org.broadinstitute.MD.rest.MetricsQuery
 import org.broadinstitute.MD.rest.MetricsQuery.SampleMetricsRequest
 import org.broadinstitute.MD.types.SampleRef
 import org.broadinstitute.MD.types.metrics.MetricsType
-
 import scala.annotation.tailrec
 import scala.collection.mutable.ListBuffer
 
@@ -62,7 +59,6 @@ object ReporterTraits {
 
   trait Query {
     val path: String
-
     def doQuery(mq: MetricsQuery) = {
       val request = new Request()
       val json = MetricsQuery.writeJson(mq)

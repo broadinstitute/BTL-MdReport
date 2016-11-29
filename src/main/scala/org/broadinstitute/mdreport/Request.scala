@@ -5,6 +5,8 @@ import akka.http.scaladsl.client.RequestBuilding._
 import akka.http.scaladsl.model.ContentTypes._
 import akka.http.scaladsl.model.{HttpEntity, HttpResponse}
 import akka.stream.ActorMaterializer
+import com.typesafe.scalalogging.Logger
+
 import scala.concurrent.Future
 
 /**
@@ -14,8 +16,12 @@ class Request {
   implicit val system = ActorSystem()
   implicit val materializer = ActorMaterializer()
   implicit val ec = system.dispatcher
+  private val logger = Logger("Request")
   def doRequest(path: String, json: String): Future[HttpResponse] =
+  {
+    logger.info("Doing Request...")
     Http().singleRequest(
       Post(uri = path, entity = HttpEntity(contentType = `application/json`, string = json))
     )
+  }
 }
