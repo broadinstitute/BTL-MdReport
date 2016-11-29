@@ -53,8 +53,8 @@ object MdReport extends App{
     System.exit(1)
   }
   def execute(config: Config): Unit = {
-    val rm = new RetrieveMetrics(config.setId, config.version, config.test)
-    val metrics = rm.retrieve()
+    val rm = RetrieveMetrics
+    val metrics = rm.retrieve(config.setId, config.version, config.test)
     val id = config.setId
     val version = config.version
     val outDir = config.outDir

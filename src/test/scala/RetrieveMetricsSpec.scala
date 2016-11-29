@@ -7,8 +7,7 @@ import org.scalatest.{FlatSpec, Matchers}
 class RetrieveMetricsSpec extends FlatSpec with Matchers {
 
   "RetrieveMetrics" should "return a list of expected metrics with non-default versioning" in {
-    val rm = new RetrieveMetrics("EntryCreatorSystemTest1", Some(1L), true)
-    val metrics = rm.retrieve()
+    val metrics = RetrieveMetrics.retrieve("EntryCreatorSystemTest1", Some(1L), true)
     val expected = List(",ErccStats,,,,,,PicardMeanQualByCycle,,PicardReadGcMetrics," +
       "RnaSeqQcStats,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,PicardAlignmentSummaryAnalysis" +
       ",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,PicardInsertSizeMetrics" +
@@ -55,8 +54,7 @@ class RetrieveMetricsSpec extends FlatSpec with Matchers {
     metrics should contain theSameElementsAs expected
   }
   it should "return a list of expected metrics with default versioning" in {
-    val rm = new RetrieveMetrics("SSF-1859", Some(1477612237045L), true)
-    val metrics = rm.retrieve()
+    val metrics = RetrieveMetrics.retrieve("SSF-1859", Some(1477612237045L), true)
     val expected = List (",ErccStats,,,,,,PicardInsertSizeMetrics,,,,,,,,,,,,,,,,,,PicardMeanQualByCycle,,PicardAlignmentSummaryAnalysis,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,RnaSeqQcStats,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,",
       ",fractionErccReads,fractionGenomeReferenceReads,totalReads,totalUnalignedReads,fractionUnalignedReads,totalErccReads,widthOf70Pct,widthOf40Pct,meanInsertSize,widthOf10Pct,widthOf30Pct,widthOf50Pct,widthOf90Pct,readPairs,widthOf99Pct,maxInsertSize,medianAbsoluteDeviation,pairOrientation,widthOf20Pct,medianInsertSize,minInsertSize,standardDeviation,widthOf80Pct,widthOf60Pct,r2MeanQual,r1MeanQual,PicardAlignmentSummaryMetrics,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,readMetrics,,,,,,,,,,,covMetrics,,alignmentMetrics,,,,,,,,,,gapMetrics,,,annotationMetrics,,,,,,,endMetrics,,,,,,,,,,note,sample",
       ",,,,,,,,,,,,,,,,,,,,,,,,,,,pfHqAlignedBases,totalReads,pfAlignedBases,pfNoiseReads,pctChimeras,pfMismatchRate,pfHqAlignedQ20Bases,pctAdapter,pctPfReads,pfHqErrorRate,pctPfReadsAligned,pfHqAlignedReads,readsAlignedInPairs,pctReadsAlignedInPairs,pfReadsAligned,pfReads,category,pfHqMedianMismatches,badCycles,meanReadLength,strandBalance,pfIndelRate,pfHqAlignedBases,totalReads,pfAlignedBases,pfNoiseReads,pctChimeras,pfMismatchRate,pfHqAlignedQ20Bases,pctAdapter,pctPfReads,pfHqErrorRate,pctPfReadsAligned,pfHqAlignedReads,readsAlignedInPairs,pctReadsAlignedInPairs,pfReadsAligned,pfReads,category,pfHqMedianMismatches,badCycles,meanReadLength,strandBalance,pfIndelRate,pfHqAlignedBases,totalReads,pfAlignedBases,pfNoiseReads,pctChimeras,pfMismatchRate,pfHqAlignedQ20Bases,pctAdapter,pctPfReads,pfHqErrorRate,pctPfReadsAligned,pfHqAlignedReads,readsAlignedInPairs,pctReadsAlignedInPairs,pfReadsAligned,pfReads,category,pfHqMedianMismatches,badCycles,meanReadLength,strandBalance,pfIndelRate,ReadMetrics,,,,,,,,,,,CovMetrics,,AlignmentMetrics,,,,,,,,,,GapMetrics,,,AnnotationMetrics,,,,,,,EndMetrics,,,,,,,,,,,",
