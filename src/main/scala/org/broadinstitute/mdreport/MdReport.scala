@@ -31,6 +31,8 @@ object MdReport extends App{
         .text("A comma-separated list of sampleIds to include in the report.")
       opt[String]('r', "reporter").valueName("<reporter>").optional().action((x,c) => c.copy(preset = Some(x)))
         .text("Use one reporter preset from the following:".concat(reporters.toString()))
+      opt[String]('d', "delimiter").valueName("<delimiter>").optional().action((x,c) => c.copy(delimiter = x))
+        .text("Specify delimiter. Default is comma.")
       opt[String]('t', "test").hidden().action((_, c) => c.copy(test = true))
         .text("Enable test mode which retrieves reports from MDBeta.")
       help("help").text("Prints this help text.")
@@ -63,6 +65,8 @@ object MdReport extends App{
           case _ => failureExit("Unrecognized reporter preset specified.")
         }
         case None =>
+//          val lr = new Reporters.LegacyReporter(config)
+//          lr.run()
           val rm = RetrieveMetrics
           val metrics = rm.retrieve(config.setId, config.version, config.test)
           val id = config.setId

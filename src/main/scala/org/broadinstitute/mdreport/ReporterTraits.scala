@@ -1,10 +1,16 @@
 package org.broadinstitute.mdreport
-import org.broadinstitute.MD.rest.MetricsQuery
+import java.io.PrintWriter
+
+import akka.http.scaladsl.model.HttpResponse
+import org.broadinstitute.MD.rest.{MetricsQuery, SampleMetrics}
 import org.broadinstitute.MD.rest.MetricsQuery.SampleMetricsRequest
-import org.broadinstitute.MD.types.SampleRef
+import org.broadinstitute.MD.types.{BaseJson, SampleRef}
 import org.broadinstitute.MD.types.metrics.MetricsType
+
 import scala.annotation.tailrec
+import scala.collection.mutable
 import scala.collection.mutable.ListBuffer
+import scala.concurrent.Future
 
 /**
   * Created by amr on 10/26/2016.
@@ -57,19 +63,110 @@ object ReporterTraits {
     }
   }
 
-  trait Query {
+  trait Requester {
     val path: String
-    def doQuery(mq: MetricsQuery) = {
+    var port: Int
+    def doQuery(mq: MetricsQuery): Future[HttpResponse] = {
       val request = new Request()
       val json = MetricsQuery.writeJson(mq)
       request.doRequest(path = path, json = json)
     }
+    def doFind(id: String, version: Option[Long]): Future[HttpResponse] = {
+      version match {
+        case Some(v) => val json = s"""{\"id\": \"$id\", \"version\": $v}"""
+          new Request().doRequest(path, json)
+        case None => val json = s"""{\"id\": \"$id\"}"""
+          new Request().doRequest(path, json)
+      }
+    }
   }
 
-  trait Output {
-//    val bookName: String
-//    val workbook =  Workbook().saveAsXlsx(bookName)
-//    def makeWorkbook = {
+  trait LegacyExtractor {
+    def legacyExtract(jsonList: List[BaseJson]) = {
+      var metrics: List[String] = List()
+      for (x <- jsonList.toIterator) {
+        x match {
+          case m: org.broadinstitute.MD.types.metrics.Metrics => metrics = m.toCsv
+          case _ =>
+        }
+      }
+      metrics
+    }
+  }
+
+  trait MapMaker {
+    /*TODO: Need to figure out a way to properly figure out use of index to solve situations where
+    we need to explicitly get the right totalReads(PAIR) value. Currently just relying on the right one
+    being the last one, which isn't a good idea.
+     */
+    def fillMap(m: mutable.LinkedHashMap[String, Any], r: List[SampleMetrics]) = {
+      var maps = mutable.ListBuffer[mutable.LinkedHashMap[String, Any]]()
+      for (item <- r) {
+        m("sampleName") = item.sampleRef.sampleID
+        for (x <- item.metrics) {
+          x.metric.makeValList(0, "", (k, i, v) => {
+            if (m.contains(k)) m(k) = v
+          }
+          )
+        }
+        println(m)
+        maps += m
+        println(maps)
+      }
+      //println(maps)
+      maps.toList
+    }
+  }
+//  for (item <- response) {
+//    smartseq_map("sampleName") = item.sampleRef.sampleID
+//    //item.metrics.head.metric.makeValList(0, "", (s, i, a) => println(s"$s, $a"))
+//    for (x <- item.metrics) {
+//      x.metric.makeValList(0, "", (k, i, v) => {
+//        val key = k.substring(k.lastIndexOf(".") + 1).trim()
+//        if (smartseq_map.contains(key)) smartseq_map(key) = v
+//        if (key.contains("totalReads"))
+//      }
+//      )
 //    }
+//    println(smartseq_map)
+//  }
+  trait Output {
+    val delimiter: String
+    def legacyWrite(metrics: List[String], outDir: String, id: String, v: Long) = {
+      val pw = new PrintWriter(s"$outDir/$id.$v.MdReport.csv")
+      for (m <- metrics) pw.write(m + "\n")
+      pw.close()
+    }
+    def writeMaps
+    (mapsList: List[mutable.LinkedHashMap[String, Any]], outDir: String, id: String, v: Long): Unit = {
+      val rawHeaders = mapsList.head.keysIterator
+      def getHeaders(h: scala.collection.mutable.ListBuffer[String]): List[String] = {
+        @tailrec
+        def headerAccumulator(h: scala.collection.mutable.ListBuffer[String]): List[String] = {
+          if (rawHeaders.hasNext) {
+            val rawHeader = rawHeaders.next
+            h += rawHeader.substring(rawHeader.lastIndexOf(".") + 1).trim()
+            headerAccumulator(h)
+          } else {
+            h.toList
+          }
+        }
+        headerAccumulator(h)
+      }
+      delimiter match {
+        case "," =>
+          val pw = new PrintWriter(s"$outDir/$id.$v.MdReport.csv")
+        case "\t" =>
+          val pw = new PrintWriter(s"$outDir/$id.$v.MdReport.tsv")
+          val headers = getHeaders(scala.collection.mutable.ListBuffer[String]())
+          pw.write(headers.mkString(delimiter).concat("\n"))
+          for (map <- mapsList) {
+            pw.write(map.values.mkString(delimiter).concat("\n"))
+          }
+          pw.close()
+        case _ =>
+          val pw = new PrintWriter(s"$outDir/$id.$v.MdReport.txt")
+      }
+    }
   }
 }

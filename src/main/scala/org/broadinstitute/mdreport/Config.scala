@@ -11,5 +11,6 @@ case class Config(
                   outDir: String = "",
                   metricsList: String = "",
                   sampleList: List[String] = List(),
+                  delimiter: String = ",",
                   test: Boolean = false
                  )
