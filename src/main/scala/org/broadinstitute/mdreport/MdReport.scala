@@ -11,9 +11,6 @@ import scala.io.Source
   * Created by amr on 10/19/2016.
   */
 object MdReport extends App{
-  implicit lazy val system = ActorSystem()
-  implicit lazy val materializer = ActorMaterializer()
-  implicit lazy val ec = system.dispatcher
   private val logger = Logger("MdReport")
   private val reporters = List("SmartSeqReporter")
   def parser = {

@@ -1,13 +1,12 @@
 package org.broadinstitute.mdreport
 import java.io.PrintWriter
-
 import akka.http.scaladsl.model.HttpResponse
 import org.broadinstitute.MD.rest.{MetricsQuery, SampleMetrics}
 import org.broadinstitute.MD.rest.MetricsQuery.SampleMetricsRequest
 import org.broadinstitute.MD.types.{BaseJson, SampleRef}
 import org.broadinstitute.MD.types.metrics.MetricsType
-
 import scala.annotation.tailrec
+import scala.collection.immutable.ListMap
 import scala.collection.mutable
 import scala.collection.mutable.ListBuffer
 import scala.concurrent.Future
@@ -100,7 +99,7 @@ object ReporterTraits {
     being the last one, which isn't a good idea.
      */
     def fillMap(m: mutable.LinkedHashMap[String, Any], r: List[SampleMetrics]) = {
-      var maps = mutable.ListBuffer[mutable.LinkedHashMap[String, Any]]()
+      var maps = mutable.ListBuffer[ListMap[String, Any]]()
       for (item <- r) {
         m("sampleName") = item.sampleRef.sampleID
         for (x <- item.metrics) {
@@ -109,27 +108,16 @@ object ReporterTraits {
           }
           )
         }
-        println(m)
-        maps += m
-        println(maps)
+        //For some reason m mutates prior to entering into listbuffer. This converts m to immutable. Copied from:
+        // http://stackoverflow.com/questions/6199186/scala-linkedhashmap-tomap-preserves-order
+        def toMap[A, B](lhm: mutable.LinkedHashMap[A, B]): ListMap[A, B] = ListMap(lhm.toSeq: _*)
+        val lm = toMap(m)
+        maps += lm
       }
-      //println(maps)
       maps.toList
     }
   }
-//  for (item <- response) {
-//    smartseq_map("sampleName") = item.sampleRef.sampleID
-//    //item.metrics.head.metric.makeValList(0, "", (s, i, a) => println(s"$s, $a"))
-//    for (x <- item.metrics) {
-//      x.metric.makeValList(0, "", (k, i, v) => {
-//        val key = k.substring(k.lastIndexOf(".") + 1).trim()
-//        if (smartseq_map.contains(key)) smartseq_map(key) = v
-//        if (key.contains("totalReads"))
-//      }
-//      )
-//    }
-//    println(smartseq_map)
-//  }
+
   trait Output {
     val delimiter: String
     def legacyWrite(metrics: List[String], outDir: String, id: String, v: Long) = {
@@ -138,7 +126,7 @@ object ReporterTraits {
       pw.close()
     }
     def writeMaps
-    (mapsList: List[mutable.LinkedHashMap[String, Any]], outDir: String, id: String, v: Long): Unit = {
+    (mapsList: List[ListMap[String, Any]], outDir: String, id: String, v: Long): Unit = {
       val rawHeaders = mapsList.head.keysIterator
       def getHeaders(h: scala.collection.mutable.ListBuffer[String]): List[String] = {
         @tailrec

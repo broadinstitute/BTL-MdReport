@@ -4,17 +4,13 @@ import akka.http.scaladsl.unmarshalling.Unmarshal
 import akka.stream.ActorMaterializer
 import org.broadinstitute.MD.rest.MetricsQuery.SampleMetricsRequest
 import org.broadinstitute.MD.rest.SampleMetrics
-import org.broadinstitute.MD.types.SampleRef
 import org.broadinstitute.MD.types.marshallers.Marshallers._
 import org.broadinstitute.MD.types.metrics.MetricsType.MetricsType
 import org.broadinstitute.MD.types.metrics.{Metrics => _, _}
 import org.broadinstitute.mdreport.ReporterTraits._
-
 import scala.concurrent.duration._
 import scala.concurrent.Await
-import org.broadinstitute.jsonutil._
-import org.broadinstitute.MD.types.{BaseJson, SampleRef}
-import org.broadinstitute.mdreport.MdReport.failureExit
+import org.broadinstitute.MD.types.SampleRef
 
 import scala.collection.mutable
 /**
@@ -29,6 +25,7 @@ object Reporters {
     val setVersion = config.version
     val sampleList = config.sampleList
     val delimiter = "\t"
+    val outDir = config.outDir
     val metrics: List[MetricsType] = List(
       MetricsType.PicardAlignmentSummaryAnalysis,
       MetricsType.PicardInsertSizeMetrics,
@@ -119,6 +116,7 @@ object Reporters {
       val result = query.flatMap(response => Unmarshal(response.entity).to[List[SampleMetrics]])
       val metricsList = Await.result(result, 5 seconds)
       val mapsList = fillMap(smartseqMap, metricsList)
+      writeMaps(mapsList = mapsList, outDir = outDir, id = setId, v = setVersion.get)
     }
   }
 //  class LegacyReporter(config: Config) extends Requester with LegacyExtractor with Output{
