@@ -1,7 +1,5 @@
 package org.broadinstitute.mdreport
 
-import akka.actor.ActorSystem
-import akka.stream.ActorMaterializer
 import com.lambdaworks.jacks.JacksMapper
 import com.typesafe.scalalogging.Logger
 import java.io.PrintWriter
@@ -45,6 +43,10 @@ object MdReport extends App{
         val mapper = JacksMapper.readValue[Map[String, String]](json)
         config.setId = mapper("id")
         config.version = Some(mapper("version").toLong)
+//        if (config.sampleList.isEmpty)
+//          {
+//            config.sampleList = doFind(config.setId, config.version)
+//          }
       }
       logger.info(s"Config: ${config.toString}")
       execute(config)
@@ -59,24 +61,14 @@ object MdReport extends App{
         case Some(p) => p match {
           case "SmartSeqReporter" => val ssr = new Reporters.SmartSeqReporter(config)
             ssr.run()
+          case "LegacyReporter" => val lr = new Reporters.LegacyReporter(config)
+            lr.run()
           case _ => failureExit("Unrecognized reporter preset specified.")
         }
         case None =>
-//          val lr = new Reporters.LegacyReporter(config)
-//          lr.run()
-          val rm = RetrieveMetrics
-          val metrics = rm.retrieve(config.setId, config.version, config.test)
-          val id = config.setId
-          val version = config.version
-          val outDir = config.outDir
-          version match {
-            case Some(v) =>
-              val pw = new PrintWriter(s"$outDir/$id.$v.MdReport.csv")
-              for (m <- metrics) pw.write(m + "\n")
-              pw.close()
-              System.exit(0)
-            case None => failureExit("Metrics version not specified.")
-      }
+          val lr = new Reporters.LegacyReporter(config)
+          lr.run()
     }
+    System.exit(0)
   }
 }

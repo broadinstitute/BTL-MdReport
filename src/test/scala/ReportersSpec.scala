@@ -8,10 +8,13 @@ import org.broadinstitute.MD.types.metrics.{MetricsType, PicardAlignmentSummaryA
 import org.broadinstitute.mdreport.Config
 import org.broadinstitute.mdreport.Reporters._
 import org.broadinstitute.MD.rest.MetricsQuery.SampleMetricsRequest
+
 import scala.concurrent.duration._
 import scala.concurrent.Await
 import akka.http.scaladsl.model.StatusCodes._
 import org.broadinstitute.MD.types.marshallers.Marshallers._
+import org.broadinstitute.mdreport.ReporterTraits.Requester
+
 import scala.collection.mutable
 /**
   * Created by amr on 11/2/2016.
@@ -189,6 +192,17 @@ class ReportersSpec extends FlatSpec with Matchers{
     )
     val myMap = ssr.fillMap(smartseq_map, response)
     ssr.writeMaps(myMap, "C:\\Dev\\Scala\\MdReport\\", config.setId, config.version.get)
+    class getSamples extends Requester {
+      var port = 9101
+      val path = s"http://btllims.broadinstitute.org:$port/MD/find/metrics"
+      def run() = {
+        doFind("SSF-1859", None)
+      }
+    }
+
+    val obj = new getSamples
+    val future = obj.run()
+    println(future)
     myMap should not contain None
   }
 }

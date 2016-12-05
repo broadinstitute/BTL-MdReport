@@ -64,7 +64,7 @@ object ReporterTraits {
 
   trait Requester {
     val path: String
-    var port: Int
+    var port: Int // This is var because port can be reassigned if using test DB.
     def doQuery(mq: MetricsQuery): Future[HttpResponse] = {
       val request = new Request()
       val json = MetricsQuery.writeJson(mq)
@@ -78,6 +78,14 @@ object ReporterTraits {
           new Request().doRequest(path, json)
       }
     }
+//    def getSamples(id: String, version: Option[Long]): Future[HttpResponse] = {
+//      version match {
+//        case Some(v) => val json = s"""{\"id\": \"$id\", \"version\": $v}"""
+//          new Request().doRequest(path, json)
+//        case None => val json = s"""{\"id\": \"$id\"}"""
+//          new Request().doRequest(path, json)
+//      }
+//    }
   }
 
   trait LegacyExtractor {
@@ -126,7 +134,7 @@ object ReporterTraits {
       pw.close()
     }
     def writeMaps
-    (mapsList: List[ListMap[String, Any]], outDir: String, id: String, v: Long): Unit = {
+    (mapsList: List[ListMap[String, Any]], outDir: String, id: String, v: Long) = {
       val rawHeaders = mapsList.head.keysIterator
       def getHeaders(h: scala.collection.mutable.ListBuffer[String]): List[String] = {
         @tailrec
@@ -141,19 +149,24 @@ object ReporterTraits {
         }
         headerAccumulator(h)
       }
+      def writeLines(pw: PrintWriter, headers: List[String]) = {
+        pw.write(headers.mkString(delimiter).concat("\n"))
+        for (map <- mapsList) {
+          pw.write(map.values.mkString(delimiter).concat("\n"))
+        }
+        pw.close()
+      }
+      val headers = getHeaders(scala.collection.mutable.ListBuffer[String]())
       delimiter match {
         case "," =>
           val pw = new PrintWriter(s"$outDir/$id.$v.MdReport.csv")
+          writeLines(pw, headers)
         case "\t" =>
           val pw = new PrintWriter(s"$outDir/$id.$v.MdReport.tsv")
-          val headers = getHeaders(scala.collection.mutable.ListBuffer[String]())
-          pw.write(headers.mkString(delimiter).concat("\n"))
-          for (map <- mapsList) {
-            pw.write(map.values.mkString(delimiter).concat("\n"))
-          }
-          pw.close()
+          writeLines(pw, headers)
         case _ =>
           val pw = new PrintWriter(s"$outDir/$id.$v.MdReport.txt")
+          writeLines(pw, headers)
       }
     }
   }

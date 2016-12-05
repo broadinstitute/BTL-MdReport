@@ -8,11 +8,14 @@ import org.broadinstitute.MD.types.marshallers.Marshallers._
 import org.broadinstitute.MD.types.metrics.MetricsType.MetricsType
 import org.broadinstitute.MD.types.metrics.{Metrics => _, _}
 import org.broadinstitute.mdreport.ReporterTraits._
+import org.broadinstitute.mdreport.MdReport.failureExit
 import scala.concurrent.duration._
 import scala.concurrent.Await
-import org.broadinstitute.MD.types.SampleRef
+import org.broadinstitute.MD.types.{BaseJson, SampleRef}
 
 import scala.collection.mutable
+
+
 /**
   * Created by amr on 10/26/2016.
   */
@@ -119,23 +122,23 @@ object Reporters {
       writeMaps(mapsList = mapsList, outDir = outDir, id = setId, v = setVersion.get)
     }
   }
-//  class LegacyReporter(config: Config) extends Requester with LegacyExtractor with Output{
-//    var port = 9100
-//    if (config.test) port = 9101
-//    val path = s"http://btllims.broadinstitute.org:$port/MD/find/metrics"
-//    val setId = config.setId
-//    val setVersion = config.version
-//    def run() = {
-//      val request = doFind(setId, setVersion)
-//      //val result = unmarshaller[BaseJson](request)
-//      val metrics = Await.result(result, 5 seconds)
-//      val metrics_list = legacy_extract(metrics)
-//      setVersion match {
-//        case Some(v) => legacy_write(metrics_list, config.outDir, setId, v)
-//          System.exit(0)
-//        case None => failureExit("Metrics version not specified.")
-//      }
-//
-//    }
-//  }
+  class LegacyReporter(config: Config) extends Requester with LegacyExtractor with Output{
+    var port = 9100
+    val delimiter = ","
+    if (config.test) port = 9101
+    val path = s"http://btllims.broadinstitute.org:$port/MD/find/metrics"
+    val setId = config.setId
+    val setVersion = config.version
+    def run() = {
+      val request = doFind(setId, setVersion)
+      val result = request.flatMap(response => Unmarshal(response.entity).to[List[BaseJson]])
+      val metrics = Await.result(result, 5 seconds)
+      val metrics_list = legacyExtract(metrics)
+      setVersion match {
+        case Some(v) => legacyWrite(metrics_list, config.outDir, setId, v)
+        case None => failureExit("Metrics version not specified.")
+      }
+
+    }
+  }
 }
