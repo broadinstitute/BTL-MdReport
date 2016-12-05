@@ -1,8 +1,6 @@
 package org.broadinstitute.mdreport
-
 import com.lambdaworks.jacks.JacksMapper
 import com.typesafe.scalalogging.Logger
-import java.io.PrintWriter
 import scala.io.Source
 
 /**
@@ -10,7 +8,7 @@ import scala.io.Source
   */
 object MdReport extends App{
   private val logger = Logger("MdReport")
-  private val reporters = List("SmartSeqReporter")
+  private val reporters = List("SmartSeqReporter, LegacyReporter, CustomReporter")
   def parser = {
     new scopt.OptionParser[Config]("MdReport") {
       head("MdReport", "1.0")
@@ -18,7 +16,7 @@ object MdReport extends App{
         .text("The ID of the metrics/analysis/set entry. Must supply this or an entry file.")
       opt[Long]('v', "version").valueName("version").optional().action((x,c) => c.copy(version = Some(x)))
         .text("Optional version string for the entry.")
-      opt[String]('e', "entryFile").optional().action((x, c) => c.copy(entryFile = x))
+      opt[String]('e', "entryFile").optional().action((x, c) => c.copy(entryFile = Some(x)))
         .text("If EntryCreator was used you may supply the entry file to pass along sampleId and version.")
       opt[String]('o',"outDir").valueName("<outDir>").required().action((x, c) => c.copy(outDir = x))
         .text("The directory to write the report to.")
@@ -28,25 +26,24 @@ object MdReport extends App{
         .text("Use one reporter preset from the following:".concat(reporters.toString()))
       opt[String]('d', "delimiter").valueName("<delimiter>").optional().action((x,c) => c.copy(delimiter = x))
         .text("Specify delimiter. Default is comma.")
+      opt[String]('f', "rdfFile").valueName("<rdfFile>").optional().action((x, c) => c.copy(rdfFile = Some(x)))
+        .text("Optional report definition file for custom reports.")
       opt[String]('t', "test").hidden().action((_, c) => c.copy(test = true))
         .text("Enable test mode which retrieves reports from MDBeta.")
       help("help").text("Prints this help text.")
       note("\nA tool for generating reports from MD.")
     }
   }
-
   parser.parse(args, Config()
   ) match {
     case Some(config) =>
-      if (config.entryFile.length > 0) {
-        val json = Source.fromFile(config.entryFile).getLines().next()
-        val mapper = JacksMapper.readValue[Map[String, String]](json)
-        config.setId = mapper("id")
-        config.version = Some(mapper("version").toLong)
-//        if (config.sampleList.isEmpty)
-//          {
-//            config.sampleList = doFind(config.setId, config.version)
-//          }
+      config.entryFile match {
+        case Some(e) =>
+          val json = Source.fromFile(e).getLines().next()
+          val mapper = JacksMapper.readValue[Map[String, String]](json)
+          config.setId = mapper("id")
+          config.version = Some(mapper("version").toLong)
+        case None => logger.info("No entry file specified.")
       }
       logger.info(s"Config: ${config.toString}")
       execute(config)
@@ -63,6 +60,13 @@ object MdReport extends App{
             ssr.run()
           case "LegacyReporter" => val lr = new Reporters.LegacyReporter(config)
             lr.run()
+          case "CustomReporter" =>
+            config.rdfFile match {
+              case Some(r) =>
+                val cr = new Reporters.CustomReporter(config)
+                cr.run()
+              case None => failureExit("CustomReporter selected but no RDF file specified.")
+            }
           case _ => failureExit("Unrecognized reporter preset specified.")
         }
         case None =>

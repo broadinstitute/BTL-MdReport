@@ -1,6 +1,7 @@
 package org.broadinstitute.mdreport
 import java.io.PrintWriter
 import akka.http.scaladsl.model.HttpResponse
+import com.typesafe.scalalogging.Logger
 import org.broadinstitute.MD.rest.{MetricsQuery, SampleMetrics}
 import org.broadinstitute.MD.rest.MetricsQuery.SampleMetricsRequest
 import org.broadinstitute.MD.types.{BaseJson, SampleRef}
@@ -30,6 +31,18 @@ object ReporterTraits {
     }
   }
 
+  trait Log extends Metrics with Output with Samples with Requester{
+    def logInit(l: Logger, t: String) = {
+      l.debug(List
+      (s"$t Reporter Configuration",
+        s"setId=$setId",
+        s"setVersion=$setVersion",
+        s"metrics=$metrics",
+        s"samples=$sampleList")
+        .mkString("\n\t")
+      )
+    }
+  }
   trait Samples {
     val sampleList: List[String]
 

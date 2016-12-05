@@ -3,18 +3,15 @@ import akka.http.scaladsl.unmarshalling.Unmarshal
 import akka.stream.ActorMaterializer
 import org.scalatest.{FlatSpec, Matchers}
 import org.broadinstitute.MD.rest.{MetricsQuery, SampleMetrics}
-import org.broadinstitute.MD.types.{BaseJson, SampleRef}
-import org.broadinstitute.MD.types.metrics.{MetricsType, PicardAlignmentSummaryAnalysis}
+import org.broadinstitute.MD.types.SampleRef
+import org.broadinstitute.MD.types.metrics.MetricsType
 import org.broadinstitute.mdreport.Config
 import org.broadinstitute.mdreport.Reporters._
 import org.broadinstitute.MD.rest.MetricsQuery.SampleMetricsRequest
-
 import scala.concurrent.duration._
 import scala.concurrent.Await
-import akka.http.scaladsl.model.StatusCodes._
 import org.broadinstitute.MD.types.marshallers.Marshallers._
 import org.broadinstitute.mdreport.ReporterTraits.Requester
-
 import scala.collection.mutable
 /**
   * Created by amr on 11/2/2016.
@@ -199,10 +196,18 @@ class ReportersSpec extends FlatSpec with Matchers{
         doFind("SSF-1859", None)
       }
     }
-
-    val obj = new getSamples
-    val future = obj.run()
-    println(future)
     myMap should not contain None
+  }
+  "A CustomReporter" should "produce a custom report" in {
+    val config = Config(
+      setId = "SSF-1859",
+      version = Some(7),
+      test = true,
+      sampleList = List("SSF1859B10_A375_AkiYoda", "SSF1859A11_A375_AkiYoda"),
+      rdfFile = Some("C:\\Dev\\Scala\\MdReport\\src\\test\\resources\\rdf.tsv"),
+      outDir = "C:\\Dev\\Scala\\MdReport\\"
+    )
+    val cr = new CustomReporter(config)
+    cr.run()
   }
 }

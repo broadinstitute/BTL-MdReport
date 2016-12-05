@@ -7,10 +7,11 @@ case class Config(
                   var setId: String = "",
                   var version: Option[Long] = None,
                   preset: Option[String] = None,
-                  entryFile: String = "",
+                  entryFile: Option[String] = None,
                   outDir: String = "",
                   metricsList: String = "",
                   sampleList: List[String] = List(),
                   delimiter: String = ",",
+                  rdfFile: Option[String] = None,
                   test: Boolean = false
                  )

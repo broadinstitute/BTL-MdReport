@@ -8,7 +8,7 @@ class ConfigSpec extends FlatSpec with Matchers{
   val config = Config(
     setId = "ConfigSpec",
     version = Some(1L),
-    entryFile = "C:\\Dev\\Scala\\MdReport\\entrycreator.json",
+    entryFile = Some("C:\\Dev\\Scala\\MdReport\\entrycreator.json"),
     outDir = "C:\\Dev\\Scala\\MdReport",
     metricsList = ""
   )
@@ -17,7 +17,7 @@ class ConfigSpec extends FlatSpec with Matchers{
     config.version = Some(1975L)
     assert(config.setId == "Foo")
     assert(config.version == Some(1975))
-    assert(config.entryFile == "C:\\Dev\\Scala\\MdReport\\entrycreator.json")
+    assert(config.entryFile.get == "C:\\Dev\\Scala\\MdReport\\entrycreator.json")
     assert(config.outDir == "C:\\Dev\\Scala\\MdReport")
   }
 }

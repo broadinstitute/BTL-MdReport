@@ -1,0 +1,3 @@
+PicardAlignmentSummaryAnalysis	PicardAlignmentSummaryMetrics.totalReads,PicardAlignmentSummaryMetrics.pfReads,PicardAlignmentSummaryMetrics.pctAdapter
+RnaSeqQcStats	alignmentMetrics.AlignmentMetrics.mapped,alignmentMetrics.AlignmentMetrics.mappedPairs
+PicardReadGcMetrics	meanGcContent

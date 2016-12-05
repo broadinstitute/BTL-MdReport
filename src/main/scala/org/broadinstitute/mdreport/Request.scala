@@ -6,7 +6,6 @@ import akka.http.scaladsl.model.ContentTypes._
 import akka.http.scaladsl.model.{HttpEntity, HttpResponse}
 import akka.stream.ActorMaterializer
 import com.typesafe.scalalogging.Logger
-
 import scala.concurrent.Future
 
 /**

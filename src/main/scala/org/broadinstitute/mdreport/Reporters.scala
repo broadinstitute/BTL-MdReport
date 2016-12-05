@@ -2,6 +2,7 @@ package org.broadinstitute.mdreport
 import akka.actor.ActorSystem
 import akka.http.scaladsl.unmarshalling.Unmarshal
 import akka.stream.ActorMaterializer
+import com.typesafe.scalalogging.Logger
 import org.broadinstitute.MD.rest.MetricsQuery.SampleMetricsRequest
 import org.broadinstitute.MD.rest.SampleMetrics
 import org.broadinstitute.MD.types.marshallers.Marshallers._
@@ -9,10 +10,13 @@ import org.broadinstitute.MD.types.metrics.MetricsType.MetricsType
 import org.broadinstitute.MD.types.metrics.{Metrics => _, _}
 import org.broadinstitute.mdreport.ReporterTraits._
 import org.broadinstitute.mdreport.MdReport.failureExit
+
 import scala.concurrent.duration._
 import scala.concurrent.Await
 import org.broadinstitute.MD.types.{BaseJson, SampleRef}
 
+import scala.annotation.tailrec
+import scala.collection.immutable.ListMap
 import scala.collection.mutable
 
 
@@ -23,7 +27,8 @@ object Reporters {
   private implicit lazy val system = ActorSystem()
   private implicit lazy val materializer = ActorMaterializer()
   private implicit lazy val ec = system.dispatcher
-  class SmartSeqReporter(config: Config) extends Metrics with Samples with Requester with Output with MapMaker{
+  private val logger = Logger("Reporter")
+  class SmartSeqReporter(config: Config) extends Metrics with Samples with Requester with Output with MapMaker with Log{
     val setId = config.setId
     val setVersion = config.version
     val sampleList = config.sampleList
@@ -37,6 +42,7 @@ object Reporters {
       MetricsType.ErccStats,
       MetricsType.RnaSeqQcStats
     )
+    logInit(logger, "SmartSeqReporter")
     var port = 9100
     if (config.test) port = 9101
     val path = s"http://btllims.broadinstitute.org:$port/MD/metricsQuery"
@@ -122,13 +128,75 @@ object Reporters {
       writeMaps(mapsList = mapsList, outDir = outDir, id = setId, v = setVersion.get)
     }
   }
-  class LegacyReporter(config: Config) extends Requester with LegacyExtractor with Output{
+
+  class CustomReporter(config: Config) extends Metrics with Samples with Requester with Output with MapMaker with Log{
+    val setId = config.setId
+    val setVersion = config.version
+    val sampleList = config.sampleList
+    val delimiter = config.delimiter
+    val outDir = config.outDir
+    logInit(logger, "CustomReporter")
+    var port = 9100
+    if (config.test) port = 9101
+    val path = s"http://btllims.broadinstitute.org:$port/MD/metricsQuery"
+    val customReport = parseRdf(config.rdfFile.get)
+    val metrics = customReport.contents.keys.toList
+    def parseRdf(f: String): CustomReport = {
+      val input = scala.io.Source.fromFile(f).getLines()
+      def makeCustomReport(m: mutable.ListMap[MetricsType.MetricsType, List[String]]): CustomReport = {
+        @tailrec
+        def acc(m: mutable.ListMap[MetricsType.MetricsType, List[String]]):
+        mutable.ListMap[MetricsType.MetricsType, List[String]] = {
+          if (input.hasNext) {
+            val iter_array = input.next().split("\t")
+            m(MetricsType.withName(iter_array.head)) = iter_array.last.split(",").toList
+            acc(m)
+          } else {
+            m
+          }
+        }
+        //This just converts the mutable listmap into an immutable one.
+        CustomReport(ListMap(acc(m).toSeq: _*))
+      }
+      makeCustomReport(mutable.ListMap[MetricsType.MetricsType, List[String]]())
+    }
+    def makeCustomMap(cr: CustomReport): mutable.LinkedHashMap[String, Any] = {
+      val m: mutable.LinkedHashMap[String, Any] = mutable.LinkedHashMap("sampleName" -> None)
+      for ((metricType, fieldList) <- cr.contents) {
+        for (field <- fieldList) {
+          m(s"$metricType.$field") = None
+        }
+      }
+      m
+    }
+    def run() = {
+      val sampleRefs = makeSampleRefs(setId = setId,
+        srefs = scala.collection.mutable.ListBuffer[SampleRef]()).toIterator
+      val sampleRequests = makeSampleRequests(sr = sampleRefs,
+        metrics = metrics,
+        sreqs = scala.collection.mutable.ListBuffer[SampleMetricsRequest]())
+      val mq = makeMetricsQuery(sampleRequests)
+      val query = doQuery(mq)
+      val result = query.flatMap(response => Unmarshal(response.entity).to[List[SampleMetrics]])
+      val customMap = makeCustomMap(customReport)
+      println(customMap)
+      val metricsList = Await.result(result, 5 seconds)
+      val mapsList = fillMap(customMap, metricsList)
+      writeMaps(mapsList = mapsList, outDir = outDir, id = setId, v = setVersion.get)
+    }
+  }
+
+  class LegacyReporter(config: Config) extends Requester with LegacyExtractor with Output with Log{
     var port = 9100
     val delimiter = ","
     if (config.test) port = 9101
     val path = s"http://btllims.broadinstitute.org:$port/MD/find/metrics"
     val setId = config.setId
     val setVersion = config.version
+    //Passing empty lists to keep logInit happy for now. Eventually may be able to populate these for legacy reporter.
+    val sampleList = List()
+    val metrics = List()
+    logInit(logger, "LegacyReporter")
     def run() = {
       val request = doFind(setId, setVersion)
       val result = request.flatMap(response => Unmarshal(response.entity).to[List[BaseJson]])
