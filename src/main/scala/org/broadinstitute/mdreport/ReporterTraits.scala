@@ -1,11 +1,13 @@
 package org.broadinstitute.mdreport
 import java.io.PrintWriter
+
 import akka.http.scaladsl.model.HttpResponse
 import com.typesafe.scalalogging.Logger
 import org.broadinstitute.MD.rest.{MetricsQuery, SampleMetrics}
 import org.broadinstitute.MD.rest.MetricsQuery.SampleMetricsRequest
 import org.broadinstitute.MD.types.{BaseJson, SampleRef}
 import org.broadinstitute.MD.types.metrics.MetricsType
+
 import scala.annotation.tailrec
 import scala.collection.immutable.ListMap
 import scala.collection.mutable
@@ -16,7 +18,7 @@ import scala.concurrent.Future
   * Created by amr on 10/26/2016.
   */
 object ReporterTraits {
-
+  val logger = Logger("ReporterTraits")
   trait Metrics {
     val setId: String
     val setVersion: Option[Long]
@@ -157,7 +159,9 @@ object ReporterTraits {
             h += rawHeader.substring(rawHeader.lastIndexOf(".") + 1).trim()
             headerAccumulator(h)
           } else {
-            h.toList
+            val headers = h.toList
+            logger.debug(s"Headers retrieved: $headers")
+            headers
           }
         }
         headerAccumulator(h)

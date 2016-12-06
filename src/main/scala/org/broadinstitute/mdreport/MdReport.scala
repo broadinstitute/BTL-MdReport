@@ -57,6 +57,7 @@ object MdReport extends App{
     config.preset match {
         case Some(p) => p match {
           case "SmartSeqReporter" => val ssr = new Reporters.SmartSeqReporter(config)
+            logger.info("Running SmartSeqReporter Preset.")
             ssr.run()
           case "LegacyReporter" => val lr = new Reporters.LegacyReporter(config)
             lr.run()

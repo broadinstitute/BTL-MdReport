@@ -10,11 +10,9 @@ import org.broadinstitute.MD.types.metrics.MetricsType.MetricsType
 import org.broadinstitute.MD.types.metrics.{Metrics => _, _}
 import org.broadinstitute.mdreport.ReporterTraits._
 import org.broadinstitute.mdreport.MdReport.failureExit
-
 import scala.concurrent.duration._
 import scala.concurrent.Await
 import org.broadinstitute.MD.types.{BaseJson, SampleRef}
-
 import scala.annotation.tailrec
 import scala.collection.immutable.ListMap
 import scala.collection.mutable
@@ -24,10 +22,10 @@ import scala.collection.mutable
   * Created by amr on 10/26/2016.
   */
 object Reporters {
+  private val logger = Logger("Reporter")
   private implicit lazy val system = ActorSystem()
   private implicit lazy val materializer = ActorMaterializer()
   private implicit lazy val ec = system.dispatcher
-  private val logger = Logger("Reporter")
   class SmartSeqReporter(config: Config) extends Metrics with Samples with Requester with Output with MapMaker with Log{
     val setId = config.setId
     val setVersion = config.version
@@ -46,6 +44,13 @@ object Reporters {
     var port = 9100
     if (config.test) port = 9101
     val path = s"http://btllims.broadinstitute.org:$port/MD/metricsQuery"
+    logger.debug(s"Initializing SmartSeqReporter: id=$setId, " +
+      s"version=$setVersion, " +
+      s"delimiter=$delimiter, " +
+      s"outDir=$outDir, " +
+      s"path=$path, " +
+      s"metrics=$metrics")
+
     val smartseqMap: mutable.LinkedHashMap[String, Any] = mutable.LinkedHashMap(
       "sampleName" -> None,
       "PicardAlignmentSummaryAnalysis.PicardAlignmentSummaryMetrics.totalReads" -> None,
@@ -115,16 +120,21 @@ object Reporters {
       "RnaSeqQcStats.Notes" -> None
     )
     def run() = {
+      logger.info("Creating sampleRefs.")
       val sampleRefs = makeSampleRefs(setId = setId,
         srefs = scala.collection.mutable.ListBuffer[SampleRef]()).toIterator
+      logger.info("Creating sampleRequests.")
       val sampleRequests = makeSampleRequests(sr = sampleRefs,
         metrics = metrics,
         sreqs = scala.collection.mutable.ListBuffer[SampleMetricsRequest]())
+      logger.info("Creating MetricsQuery.")
       val mq = makeMetricsQuery(sampleRequests)
       val query = doQuery(mq)
       val result = query.flatMap(response => Unmarshal(response.entity).to[List[SampleMetrics]])
       val metricsList = Await.result(result, 5 seconds)
+      logger.debug(s"Metrics received from database: ${metricsList.toString}")
       val mapsList = fillMap(smartseqMap, metricsList)
+      logger.debug(s"Metrics map created.\n$mapsList")
       writeMaps(mapsList = mapsList, outDir = outDir, id = setId, v = setVersion.get)
     }
   }
@@ -206,7 +216,6 @@ object Reporters {
         case Some(v) => legacyWrite(metrics_list, config.outDir, setId, v)
         case None => failureExit("Metrics version not specified.")
       }
-
     }
   }
 }
