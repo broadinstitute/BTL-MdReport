@@ -7,12 +7,19 @@ import org.broadinstitute.MD.types.SampleRef
 import org.broadinstitute.MD.types.metrics.MetricsType
 import org.broadinstitute.mdreport.Config
 import org.broadinstitute.mdreport.Reporters._
-import org.broadinstitute.MD.rest.MetricsQuery.SampleMetricsRequest
+import org.broadinstitute.MD.rest.SampleMetricsRequest
+
 import scala.concurrent.duration._
 import scala.concurrent.Await
 import org.broadinstitute.MD.types.marshallers.Marshallers._
+import org.broadinstitute.MD.types.metrics.MetricsType.MetricsType
 import org.broadinstitute.mdreport.ReporterTraits.Requester
+
 import scala.collection.mutable
+import org.broadinstitute.mdreport.Reporters
+
+import scala.collection.mutable.ListBuffer
+
 /**
   * Created by amr on 11/2/2016.
   */
@@ -25,7 +32,7 @@ class ReportersSpec extends FlatSpec with Matchers{
     val config = Config(
       setId = "SSF-1859",
       version = Some(7),
-      sampleList = List("SSF1859B12_A375_AkiYoda", "SSF1859A11_A375_AkiYoda")
+      sampleList = Option(List("SSF1859B12_A375_AkiYoda", "SSF1859A11_A375_AkiYoda"))
     )
     val ssr = new SmartSeqReporter(config)
     ssr.metrics should contain allOf (MetricsType.PicardAlignmentSummaryAnalysis,
@@ -39,7 +46,7 @@ class ReportersSpec extends FlatSpec with Matchers{
     val config = Config(
       setId = "SSF-1859",
       version = Some(7),
-      sampleList = List("SSF1859B12_A375_AkiYoda", "SSF1859A11_A375_AkiYoda")
+      sampleList = Option(List("SSF1859B12_A375_AkiYoda", "SSF1859A11_A375_AkiYoda"))
     )
     val ssr = new SmartSeqReporter(config)
     ssr.makeSampleRefs(setId = ssr.setId,
@@ -53,7 +60,7 @@ class ReportersSpec extends FlatSpec with Matchers{
     val config = Config(
       setId = "SSF-1859",
       version = Some(7),
-      sampleList = List("SSF1859B12_A375_AkiYoda", "SSF1859A11_A375_AkiYoda")
+      sampleList = Option(List("SSF1859B12_A375_AkiYoda", "SSF1859A11_A375_AkiYoda"))
     )
     val ssr = new SmartSeqReporter(config)
     val sref = ssr.makeSampleRefs(setId = ssr.setId,
@@ -76,7 +83,7 @@ class ReportersSpec extends FlatSpec with Matchers{
       val config = Config(
         setId = "SSF-1859",
         version = Some(7),
-        sampleList = List("SSF1859B12_A375_AkiYoda", "SSF1859A11_A375_AkiYoda")
+        sampleList = Option(List("SSF1859B12_A375_AkiYoda", "SSF1859A11_A375_AkiYoda"))
       )
       val ssr = new SmartSeqReporter(config)
       val sref = ssr.makeSampleRefs(setId = ssr.setId,
@@ -107,7 +114,7 @@ class ReportersSpec extends FlatSpec with Matchers{
       setId = "SSF-1859",
       version = Some(7),
       test = true,
-      sampleList = List("SSF1859B12_A375_AkiYoda", "SSF1859A11_A375_AkiYoda")
+      sampleList = Option(List("SSF1859B12_A375_AkiYoda", "SSF1859A11_A375_AkiYoda"))
     )
     val ssr = new SmartSeqReporter(config)
     val sref = ssr.makeSampleRefs(setId = ssr.setId,
@@ -198,16 +205,38 @@ class ReportersSpec extends FlatSpec with Matchers{
     }
     myMap should not contain None
   }
-  "A CustomReporter" should "produce a custom report" in {
+  "A CustomReporter" should "produce a custom report object" in {
     val config = Config(
       setId = "SSF-1859",
       version = Some(7),
       test = true,
-      sampleList = List("SSF1859B10_A375_AkiYoda", "SSF1859A11_A375_AkiYoda"),
+      sampleList = Option(List("SSF1859B10_A375_AkiYoda", "SSF1859A11_A375_AkiYoda")),
       rdfFile = Some("C:\\Dev\\Scala\\MdReport\\src\\test\\resources\\rdf.tsv"),
       outDir = "C:\\Dev\\Scala\\MdReport\\"
     )
     val cr = new CustomReporter(config)
+    val delim = "\t"
+    val out = scala.io.Source.fromFile(config.rdfFile.get).getLines.map(x =>
+      {
+        val iter = x.split(delim)
+        Tuple2(MetricsType.withName(iter.head), iter.last.split(","))
+      }
+    )
     cr.run()
+    out.length should be (3)
+  }
+  "A Sample Metrics Query" should "return a list of sample names" in {
+    val rootPath = "http://btllims.broadinstitute.org"
+    val port = 9101
+    val server = s"$rootPath:$port/MD"
+    val samples = Reporters.getSamples("SSF-1859", Some(7), server)
+    samples should contain allOf("SSF1859B12_A375_AkiYoda", "SSF1859A12_A375_AkiYoda", "SSF1859B07_A375_AkiYoda",
+      "SSF1859B09_A375_AkiYoda", "SSF1859B11_A375_AkiYoda", "SSF1859B04_A375_AkiYoda", "SSF1859B05_A375_AkiYoda",
+      "SSF1859A07_A375_AkiYoda", "SSF1859A10_A375_AkiYoda", "SSF1859B08_A375_AkiYoda", "SSF1859A11_A375_AkiYoda",
+      "SSF1859A05_A375_AkiYoda", "SSF1859A06_WBC_AkiYoda", "SSF1859A09_A375_AkiYoda", "SSF1859B10_A375_AkiYoda",
+      "SSF1859B06_A375_AkiYoda", "SSF1859A08_A375_AkiYoda", "SSF1859A04_A375_AkiYoda", "SSF1859A02_A375_AkiYoda",
+      "SSF1859B02_A375_AkiYoda", "SSF1859B01_A375_AkiYoda", "SSF1859B03_A375_AkiYoda", "SSF1859A03_A375_AkiYoda",
+      "SSF1859A01_A375_AkiYoda")
+
   }
 }

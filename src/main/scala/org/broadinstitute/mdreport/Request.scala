@@ -10,12 +10,20 @@ import scala.concurrent.Future
 
 /**
   * Created by Amr on 10/21/2016.
+  * An object containing the actor system and post request logic for making http requests.
   */
-class Request {
-  implicit val system = ActorSystem()
-  implicit val materializer = ActorMaterializer()
-  implicit val ec = system.dispatcher
+object Request {
+  private implicit val system = ActorSystem()
+  private implicit val materializer = ActorMaterializer()
+  private implicit val ec = system.dispatcher
   private val logger = Logger("Request")
+
+  /**
+    * A function for making JSON post requests to a database server.
+    * @param path The path to the database.
+    * @param json The JSON to be sent with the post request.
+    * @return an HttpResponse future.
+    */
   def doRequest(path: String, json: String): Future[HttpResponse] =
   {
     logger.info("Doing Request...")

@@ -10,7 +10,7 @@ case class Config(
                   entryFile: Option[String] = None,
                   outDir: String = "",
                   metricsList: String = "",
-                  sampleList: List[String] = List(),
+                  sampleList: Option[List[String]] = None,
                   delimiter: String = ",",
                   rdfFile: Option[String] = None,
                   test: Boolean = false

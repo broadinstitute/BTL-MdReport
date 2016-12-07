@@ -3,8 +3,7 @@ import akka.actor.ActorSystem
 import akka.http.scaladsl.unmarshalling.Unmarshal
 import akka.stream.ActorMaterializer
 import com.typesafe.scalalogging.Logger
-import org.broadinstitute.MD.rest.MetricsQuery.SampleMetricsRequest
-import org.broadinstitute.MD.rest.SampleMetrics
+import org.broadinstitute.MD.rest.{SampleMetricsRequest, SampleMetrics, MetricSamples, MetricsSamplesQuery}
 import org.broadinstitute.MD.types.marshallers.Marshallers._
 import org.broadinstitute.MD.types.metrics.MetricsType.MetricsType
 import org.broadinstitute.MD.types.metrics.{Metrics => _, _}
@@ -17,7 +16,6 @@ import scala.annotation.tailrec
 import scala.collection.immutable.ListMap
 import scala.collection.mutable
 
-
 /**
   * Created by amr on 10/26/2016.
   */
@@ -26,10 +24,37 @@ object Reporters {
   private implicit lazy val system = ActorSystem()
   private implicit lazy val materializer = ActorMaterializer()
   private implicit lazy val ec = system.dispatcher
+  private val rootPath = "http://btllims.broadinstitute.org"
+  def getSamples(setId: String, version: Option[Long], server: String): List[String] = {
+    val path = s"$server/metricsSamplesQuery"
+    val mq = MetricsSamplesQuery(setId, version)
+    val json = MetricsSamplesQuery.writeJson(mq)
+    val future = Request.doRequest(path, json)
+    val result = future.flatMap(response => Unmarshal(response.entity).to[MetricSamples])
+    val sampleList = Await.result(result, 5 seconds).sampleRequests.toIterator
+    def makeSampleList(lb: mutable.ListBuffer[String]): List[String] = {
+      @tailrec
+      def sampleAcc(lb: mutable.ListBuffer[String]): mutable.ListBuffer[String] = {
+        if (sampleList.hasNext) {
+          lb += sampleList.next().sampleRef.sampleID
+          sampleAcc(lb)
+        } else {
+          lb
+        }
+      }
+      sampleAcc(lb).toList
+    }
+    makeSampleList(mutable.ListBuffer[String]())
+  }
+
   class SmartSeqReporter(config: Config) extends Metrics with Samples with Requester with Output with MapMaker with Log{
     val setId = config.setId
     val setVersion = config.version
-    val sampleList = config.sampleList
+    var port = 9100
+    if (config.test) port = 9101
+    val server = s"$rootPath:$port/MD"
+    val path = s"$server/metricsQuery"
+    val sampleList = config.sampleList.getOrElse(getSamples(setId, setVersion, server))
     val delimiter = "\t"
     val outDir = config.outDir
     val metrics: List[MetricsType] = List(
@@ -40,16 +65,6 @@ object Reporters {
       MetricsType.ErccStats,
       MetricsType.RnaSeqQcStats
     )
-    logInit(logger, "SmartSeqReporter")
-    var port = 9100
-    if (config.test) port = 9101
-    val path = s"http://btllims.broadinstitute.org:$port/MD/metricsQuery"
-    logger.debug(s"Initializing SmartSeqReporter: id=$setId, " +
-      s"version=$setVersion, " +
-      s"delimiter=$delimiter, " +
-      s"outDir=$outDir, " +
-      s"path=$path, " +
-      s"metrics=$metrics")
 
     val smartseqMap: mutable.LinkedHashMap[String, Any] = mutable.LinkedHashMap(
       "sampleName" -> None,
@@ -119,6 +134,7 @@ object Reporters {
       "RnaSeqQcStats.endMetrics.EndMetrics.fivePrimeNorm" -> None,
       "RnaSeqQcStats.Notes" -> None
     )
+    logInit(logger, "SmartSeqReporter")
     def run() = {
       logger.info("Creating sampleRefs.")
       val sampleRefs = makeSampleRefs(setId = setId,
@@ -142,33 +158,25 @@ object Reporters {
   class CustomReporter(config: Config) extends Metrics with Samples with Requester with Output with MapMaker with Log{
     val setId = config.setId
     val setVersion = config.version
-    val sampleList = config.sampleList
     val delimiter = config.delimiter
     val outDir = config.outDir
-    logInit(logger, "CustomReporter")
     var port = 9100
     if (config.test) port = 9101
-    val path = s"http://btllims.broadinstitute.org:$port/MD/metricsQuery"
+    val server = s"$rootPath:$port/MD"
+    val path = s"$server/metricsQuery"
+    val sampleList = config.sampleList.getOrElse(getSamples(setId, setVersion, server))
     val customReport = parseRdf(config.rdfFile.get)
     val metrics = customReport.contents.keys.toList
+    logInit(logger, "CustomReporter")
     def parseRdf(f: String): CustomReport = {
-      val input = scala.io.Source.fromFile(f).getLines()
-      def makeCustomReport(m: mutable.ListMap[MetricsType.MetricsType, List[String]]): CustomReport = {
-        @tailrec
-        def acc(m: mutable.ListMap[MetricsType.MetricsType, List[String]]):
-        mutable.ListMap[MetricsType.MetricsType, List[String]] = {
-          if (input.hasNext) {
-            val iter_array = input.next().split("\t")
-            m(MetricsType.withName(iter_array.head)) = iter_array.last.split(",").toList
-            acc(m)
-          } else {
-            m
-          }
-        }
-        //This just converts the mutable listmap into an immutable one.
-        CustomReport(ListMap(acc(m).toSeq: _*))
+      val delim = "\t"
+      val out = scala.io.Source.fromFile(config.rdfFile.get).getLines.map(x =>
+      {
+        val iter = x.split(delim)
+        Tuple2(MetricsType.withName(iter.head), iter.last.split(",").toList)
       }
-      makeCustomReport(mutable.ListMap[MetricsType.MetricsType, List[String]]())
+      )
+      CustomReport(ListMap(out.toSeq: _*))
     }
     def makeCustomMap(cr: CustomReport): mutable.LinkedHashMap[String, Any] = {
       val m: mutable.LinkedHashMap[String, Any] = mutable.LinkedHashMap("sampleName" -> None)
@@ -189,7 +197,6 @@ object Reporters {
       val query = doQuery(mq)
       val result = query.flatMap(response => Unmarshal(response.entity).to[List[SampleMetrics]])
       val customMap = makeCustomMap(customReport)
-      println(customMap)
       val metricsList = Await.result(result, 5 seconds)
       val mapsList = fillMap(customMap, metricsList)
       writeMaps(mapsList = mapsList, outDir = outDir, id = setId, v = setVersion.get)

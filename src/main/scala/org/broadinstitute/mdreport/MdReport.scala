@@ -11,7 +11,7 @@ object MdReport extends App{
   private val reporters = List("SmartSeqReporter, LegacyReporter, CustomReporter")
   def parser = {
     new scopt.OptionParser[Config]("MdReport") {
-      head("MdReport", "1.0")
+      head("MdReport", "2.0")
       opt[String]('i', "setId").valueName("<id>").optional().action((x,c) => c.copy(setId = x))
         .text("The ID of the metrics/analysis/set entry. Must supply this or an entry file.")
       opt[Long]('v', "version").valueName("version").optional().action((x,c) => c.copy(version = Some(x)))
@@ -20,7 +20,8 @@ object MdReport extends App{
         .text("If EntryCreator was used you may supply the entry file to pass along sampleId and version.")
       opt[String]('o',"outDir").valueName("<outDir>").required().action((x, c) => c.copy(outDir = x))
         .text("The directory to write the report to.")
-      opt[String]('s', "sampleList").valueName("<sampleList>").optional().action((x, c) => c.copy(sampleList = x.split(',').toList))
+      opt[String]('s', "sampleList").valueName("<sampleList>").optional().action((x, c) =>
+        c.copy(sampleList = Some(x.split(",").toList)))
         .text("A comma-separated list of sampleIds to include in the report.")
       opt[String]('r', "reporter").valueName("<reporter>").optional().action((x,c) => c.copy(preset = Some(x)))
         .text("Use one reporter preset from the following:".concat(reporters.toString()))
@@ -37,6 +38,7 @@ object MdReport extends App{
   parser.parse(args, Config()
   ) match {
     case Some(config) =>
+      // If entry file exists, set config.setId and config.version to what's in the file.
       config.entryFile match {
         case Some(e) =>
           val json = Source.fromFile(e).getLines().next()
@@ -54,7 +56,9 @@ object MdReport extends App{
     System.exit(1)
   }
   def execute(config: Config): Unit = {
+    // If preset is selected by user...
     config.preset match {
+        // Execute the appropriate preset...
         case Some(p) => p match {
           case "SmartSeqReporter" => val ssr = new Reporters.SmartSeqReporter(config)
             logger.info("Running SmartSeqReporter Preset.")
@@ -70,6 +74,7 @@ object MdReport extends App{
             }
           case _ => failureExit("Unrecognized reporter preset specified.")
         }
+          // Otherwise, run the legacy reporter.
         case None =>
           val lr = new Reporters.LegacyReporter(config)
           lr.run()

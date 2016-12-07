@@ -1,13 +1,11 @@
 package org.broadinstitute.mdreport
 import java.io.PrintWriter
-
 import akka.http.scaladsl.model.HttpResponse
 import com.typesafe.scalalogging.Logger
 import org.broadinstitute.MD.rest.{MetricsQuery, SampleMetrics}
-import org.broadinstitute.MD.rest.MetricsQuery.SampleMetricsRequest
+import org.broadinstitute.MD.rest.SampleMetricsRequest
 import org.broadinstitute.MD.types.{BaseJson, SampleRef}
 import org.broadinstitute.MD.types.metrics.MetricsType
-
 import scala.annotation.tailrec
 import scala.collection.immutable.ListMap
 import scala.collection.mutable
@@ -16,24 +14,36 @@ import scala.concurrent.Future
 
 /**
   * Created by amr on 10/26/2016.
+  * A collection of traits that can be mixed to create reporter presets.
   */
 object ReporterTraits {
   val logger = Logger("ReporterTraits")
+
   trait Metrics {
     val setId: String
     val setVersion: Option[Long]
     val metrics: List[MetricsType.MetricsType]
 
-    def makeMetricsQuery(sr: ListBuffer[SampleMetricsRequest]): MetricsQuery = {
+    /**
+      * A function for creating MetricsQuery objects.
+      * @param sr a list containing SampleMetricsRequests.
+      * @return
+      */
+    def makeMetricsQuery(sr: List[SampleMetricsRequest]): MetricsQuery = {
       MetricsQuery(
         id = setId,
         version = setVersion,
-        sampleRequests = sr.toList
+        sampleRequests = sr
       )
     }
   }
 
   trait Log extends Metrics with Output with Samples with Requester{
+    /**
+      * A function for logging reporter initialization parameter values.
+      * @param l The logger object
+      * @param t The reporter type as a string.
+      */
     def logInit(l: Logger, t: String) = {
       l.debug(List
       (s"$t Reporter Configuration",
@@ -48,6 +58,12 @@ object ReporterTraits {
   trait Samples {
     val sampleList: List[String]
 
+    /**
+      * A function for generating a listbuffer of SampleRefs
+      * @param srefs A mutable listbuffer for holding the accumulated sample refs.
+      * @param setId the setId(aka metricsID) of the samples.
+      * @return A list of SampleRefs
+      */
     def makeSampleRefs(srefs: ListBuffer[SampleRef], setId: String): ListBuffer[SampleRef] = {
       val iter = sampleList.toIterator
       @tailrec
@@ -62,8 +78,15 @@ object ReporterTraits {
       refAccumulator(srefs)
     }
 
+    /**
+      * A function for creating a listbuffer of SampleRequests
+      * @param sr an iterator containign samplerefs
+      * @param metrics a list indicating the MetricsTypes to request.
+      * @param sreqs an initially-empty listbuffer to hold accumulated samplemetricsrequests.
+      * @return a list of sample metrics requests.
+      */
     def makeSampleRequests(sr: Iterator[SampleRef], metrics: List[MetricsType.MetricsType],
-                           sreqs: ListBuffer[SampleMetricsRequest]): ListBuffer[SampleMetricsRequest] = {
+                           sreqs: ListBuffer[SampleMetricsRequest]): List[SampleMetricsRequest] = {
       @tailrec
       def reqAccumulator(sreqs: ListBuffer[SampleMetricsRequest]): ListBuffer[SampleMetricsRequest] = {
         if (sr.hasNext) {
@@ -73,7 +96,7 @@ object ReporterTraits {
           sreqs
         }
       }
-      reqAccumulator(sreqs)
+      reqAccumulator(sreqs).toList
     }
   }
 
@@ -81,26 +104,17 @@ object ReporterTraits {
     val path: String
     var port: Int // This is var because port can be reassigned if using test DB.
     def doQuery(mq: MetricsQuery): Future[HttpResponse] = {
-      val request = new Request()
       val json = MetricsQuery.writeJson(mq)
-      request.doRequest(path = path, json = json)
+      Request.doRequest(path = path, json = json)
     }
     def doFind(id: String, version: Option[Long]): Future[HttpResponse] = {
       version match {
         case Some(v) => val json = s"""{\"id\": \"$id\", \"version\": $v}"""
-          new Request().doRequest(path, json)
+          Request.doRequest(path, json)
         case None => val json = s"""{\"id\": \"$id\"}"""
-          new Request().doRequest(path, json)
+          Request.doRequest(path, json)
       }
     }
-//    def getSamples(id: String, version: Option[Long]): Future[HttpResponse] = {
-//      version match {
-//        case Some(v) => val json = s"""{\"id\": \"$id\", \"version\": $v}"""
-//          new Request().doRequest(path, json)
-//        case None => val json = s"""{\"id\": \"$id\"}"""
-//          new Request().doRequest(path, json)
-//      }
-//    }
   }
 
   trait LegacyExtractor {
