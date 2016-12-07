@@ -12,11 +12,11 @@ object MdReport extends App{
   def parser = {
     new scopt.OptionParser[Config]("MdReport") {
       head("MdReport", "2.0")
-      opt[String]('i', "setId").valueName("<id>").optional().action((x,c) => c.copy(setId = x))
+      opt[String]('i', "setId").valueName("<id>").optional().action((x,c) => c.copy(setId = Some(x)))
         .text("The ID of the metrics/analysis/set entry. Must supply this or an entry file.")
-      opt[Long]('v', "version").valueName("version").optional().action((x,c) => c.copy(version = Some(x)))
+      opt[Long]('v', "version").valueName("<version>").optional().action((x,c) => c.copy(version = Some(x)))
         .text("Optional version string for the entry.")
-      opt[String]('e', "entryFile").optional().action((x, c) => c.copy(entryFile = Some(x)))
+      opt[String]('e', "entryFile").valueName("<entryFile>").optional().action((x, c) => c.copy(entryFile = Some(x)))
         .text("If EntryCreator was used you may supply the entry file to pass along sampleId and version.")
       opt[String]('o',"outDir").valueName("<outDir>").required().action((x, c) => c.copy(outDir = x))
         .text("The directory to write the report to.")
@@ -41,9 +41,11 @@ object MdReport extends App{
       // If entry file exists, set config.setId and config.version to what's in the file.
       config.entryFile match {
         case Some(e) =>
+          if (config.version.isDefined || config.setId.isDefined)
+            failureExit("Do not specify version or id with flags when using --entryFile.")
           val json = Source.fromFile(e).getLines().next()
           val mapper = JacksMapper.readValue[Map[String, String]](json)
-          config.setId = mapper("id")
+          config.setId = Some(mapper("id"))
           config.version = Some(mapper("version").toLong)
         case None => logger.info("No entry file specified.")
       }

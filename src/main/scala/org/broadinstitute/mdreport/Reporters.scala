@@ -48,7 +48,7 @@ object Reporters {
   }
 
   class SmartSeqReporter(config: Config) extends Metrics with Samples with Requester with Output with MapMaker with Log{
-    val setId = config.setId
+    val setId = config.setId.get
     val setVersion = config.version
     var port = 9100
     if (config.test) port = 9101
@@ -156,7 +156,7 @@ object Reporters {
   }
 
   class CustomReporter(config: Config) extends Metrics with Samples with Requester with Output with MapMaker with Log{
-    val setId = config.setId
+    val setId = config.setId.get
     val setVersion = config.version
     val delimiter = config.delimiter
     val outDir = config.outDir
@@ -208,7 +208,7 @@ object Reporters {
     val delimiter = ","
     if (config.test) port = 9101
     val path = s"http://btllims.broadinstitute.org:$port/MD/find/metrics"
-    val setId = config.setId
+    val setId = config.setId.get
     val setVersion = config.version
     //Passing empty lists to keep logInit happy for now. Eventually may be able to populate these for legacy reporter.
     val sampleList = List()

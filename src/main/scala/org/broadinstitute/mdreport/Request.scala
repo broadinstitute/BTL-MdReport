@@ -22,7 +22,7 @@ object Request {
     * A function for making JSON post requests to a database server.
     * @param path The path to the database.
     * @param json The JSON to be sent with the post request.
-    * @return an HttpResponse future.
+    * @return An HttpResponse future.
     */
   def doRequest(path: String, json: String): Future[HttpResponse] =
   {

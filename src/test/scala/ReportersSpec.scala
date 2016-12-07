@@ -8,17 +8,12 @@ import org.broadinstitute.MD.types.metrics.MetricsType
 import org.broadinstitute.mdreport.Config
 import org.broadinstitute.mdreport.Reporters._
 import org.broadinstitute.MD.rest.SampleMetricsRequest
-
 import scala.concurrent.duration._
 import scala.concurrent.Await
 import org.broadinstitute.MD.types.marshallers.Marshallers._
-import org.broadinstitute.MD.types.metrics.MetricsType.MetricsType
 import org.broadinstitute.mdreport.ReporterTraits.Requester
-
 import scala.collection.mutable
 import org.broadinstitute.mdreport.Reporters
-
-import scala.collection.mutable.ListBuffer
 
 /**
   * Created by amr on 11/2/2016.
@@ -30,7 +25,7 @@ class ReportersSpec extends FlatSpec with Matchers{
   private implicit lazy val ec = system.dispatcher
   "A SmartSeqReporter" should "be created completely from a config object" in {
     val config = Config(
-      setId = "SSF-1859",
+      setId = Some("SSF-1859"),
       version = Some(7),
       sampleList = Option(List("SSF1859B12_A375_AkiYoda", "SSF1859A11_A375_AkiYoda"))
     )
@@ -44,7 +39,7 @@ class ReportersSpec extends FlatSpec with Matchers{
   }
   it should "produce a correct sampleRefs" in {
     val config = Config(
-      setId = "SSF-1859",
+      setId = Some("SSF-1859"),
       version = Some(7),
       sampleList = Option(List("SSF1859B12_A375_AkiYoda", "SSF1859A11_A375_AkiYoda"))
     )
@@ -58,7 +53,7 @@ class ReportersSpec extends FlatSpec with Matchers{
   }
   it should "produce a correct sampleReqs" in {
     val config = Config(
-      setId = "SSF-1859",
+      setId = Some("SSF-1859"),
       version = Some(7),
       sampleList = Option(List("SSF1859B12_A375_AkiYoda", "SSF1859A11_A375_AkiYoda"))
     )
@@ -81,7 +76,7 @@ class ReportersSpec extends FlatSpec with Matchers{
   }
     it should "produce a correct MetricsQuery" in {
       val config = Config(
-        setId = "SSF-1859",
+        setId = Some("SSF-1859"),
         version = Some(7),
         sampleList = Option(List("SSF1859B12_A375_AkiYoda", "SSF1859A11_A375_AkiYoda"))
       )
@@ -111,7 +106,7 @@ class ReportersSpec extends FlatSpec with Matchers{
     }
   it should "return a a filled map" in {
     val config = Config(
-      setId = "SSF-1859",
+      setId = Some("SSF-1859"),
       version = Some(7),
       test = true,
       sampleList = Option(List("SSF1859B12_A375_AkiYoda", "SSF1859A11_A375_AkiYoda"))
@@ -195,7 +190,7 @@ class ReportersSpec extends FlatSpec with Matchers{
       "RnaSeqQcStats.Notes" -> None
     )
     val myMap = ssr.fillMap(smartseq_map, response)
-    ssr.writeMaps(myMap, "C:\\Dev\\Scala\\MdReport\\", config.setId, config.version.get)
+    ssr.writeMaps(myMap, "C:\\Dev\\Scala\\MdReport\\", config.setId.get, config.version.get)
     class getSamples extends Requester {
       var port = 9101
       val path = s"http://btllims.broadinstitute.org:$port/MD/find/metrics"
@@ -207,7 +202,7 @@ class ReportersSpec extends FlatSpec with Matchers{
   }
   "A CustomReporter" should "produce a custom report object" in {
     val config = Config(
-      setId = "SSF-1859",
+      setId = Some("SSF-1859"),
       version = Some(7),
       test = true,
       sampleList = Option(List("SSF1859B10_A375_AkiYoda", "SSF1859A11_A375_AkiYoda")),
