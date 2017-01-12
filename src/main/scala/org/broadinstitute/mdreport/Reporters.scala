@@ -68,7 +68,11 @@ object Reporters {
 
     val smartseqMap: mutable.LinkedHashMap[String, Any] = mutable.LinkedHashMap(
       "sampleName" -> None,
+      //TODO: Get barcodes from SmartSeq SSF walkup file.
+      "indexBarcode1" -> None,
+      "indexBarcode2" -> None,
       "PicardAlignmentSummaryAnalysis.PicardAlignmentSummaryMetrics.totalReads" -> None,
+      "DemultiplexedStats.pctOfTotalDemultiplexed" -> None,
       "PicardAlignmentSummaryAnalysis.PicardAlignmentSummaryMetrics.meanReadLength" -> None,
       "PicardAlignmentSummaryAnalysis.PicardAlignmentSummaryMetrics.pfReads" -> None,
       "PicardAlignmentSummaryAnalysis.PicardAlignmentSummaryMetrics.pctPfReads" -> None,
@@ -84,6 +88,8 @@ object Reporters {
       "PicardInsertSizeMetrics.medianInsertSize" -> None,
       "PicardInsertSizeMetrics.standardDeviation" -> None,
       "PicardReadGcMetrics.meanGcContent" -> None,
+      //TODO: get EstimateLibraryComplexity metrics
+      "EstimateLibraryComplexity.pctDuplicateDeNovo" -> None,
       "ErccStats.totalErccReads" -> None,
       "ErccStats.fractionErccReads" -> None,
       "ErccStats.fractionGenomeReferenceReads" -> None,

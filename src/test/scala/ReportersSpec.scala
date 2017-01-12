@@ -106,10 +106,10 @@ class ReportersSpec extends FlatSpec with Matchers{
     }
   it should "return a a filled map" in {
     val config = Config(
-      setId = Some("SSF-1859"),
-      version = Some(7),
+      setId = Some("Mouse-Nigrovic"),
+      version = Some(1483633919195L),
       test = true,
-      sampleList = Option(List("SSF1859B12_A375_AkiYoda", "SSF1859A11_A375_AkiYoda"))
+      sampleList = Option(List("SSF1871C06_PeterNigrovic", "SSF1871D06_PeterNigrovic"))
     )
     val ssr = new SmartSeqReporter(config)
     val sref = ssr.makeSampleRefs(setId = ssr.setId,
@@ -202,10 +202,10 @@ class ReportersSpec extends FlatSpec with Matchers{
   }
   "A CustomReporter" should "produce a custom report object" in {
     val config = Config(
-      setId = Some("SSF-1859"),
-      version = Some(7),
+      setId = Some("Mouse-Nigrovic"),
+      version = Some(1483633919195L),
       test = true,
-      sampleList = Option(List("SSF1859B10_A375_AkiYoda", "SSF1859A11_A375_AkiYoda")),
+      sampleList = Option(List("SSF1871C06_PeterNigrovic", "SSF1871D06_PeterNigrovic")),
       rdfFile = Some("C:\\Dev\\Scala\\MdReport\\src\\test\\resources\\rdf.tsv"),
       outDir = "C:\\Dev\\Scala\\MdReport\\"
     )
@@ -224,14 +224,7 @@ class ReportersSpec extends FlatSpec with Matchers{
     val rootPath = "http://btllims.broadinstitute.org"
     val port = 9101
     val server = s"$rootPath:$port/MD"
-    val samples = Reporters.getSamples("SSF-1859", Some(7), server)
-    samples should contain allOf("SSF1859B12_A375_AkiYoda", "SSF1859A12_A375_AkiYoda", "SSF1859B07_A375_AkiYoda",
-      "SSF1859B09_A375_AkiYoda", "SSF1859B11_A375_AkiYoda", "SSF1859B04_A375_AkiYoda", "SSF1859B05_A375_AkiYoda",
-      "SSF1859A07_A375_AkiYoda", "SSF1859A10_A375_AkiYoda", "SSF1859B08_A375_AkiYoda", "SSF1859A11_A375_AkiYoda",
-      "SSF1859A05_A375_AkiYoda", "SSF1859A06_WBC_AkiYoda", "SSF1859A09_A375_AkiYoda", "SSF1859B10_A375_AkiYoda",
-      "SSF1859B06_A375_AkiYoda", "SSF1859A08_A375_AkiYoda", "SSF1859A04_A375_AkiYoda", "SSF1859A02_A375_AkiYoda",
-      "SSF1859B02_A375_AkiYoda", "SSF1859B01_A375_AkiYoda", "SSF1859B03_A375_AkiYoda", "SSF1859A03_A375_AkiYoda",
-      "SSF1859A01_A375_AkiYoda")
-
+    val samples = Reporters.getSamples("Mouse-Nigrovic", Some(1483633919195L), server)
+    samples.length should be (96)
   }
 }
