@@ -11,7 +11,7 @@ object MdReport extends App{
   private val reporters = List("SmartSeqReporter, LegacyReporter, CustomReporter")
   def parser = {
     new scopt.OptionParser[Config]("MdReport") {
-      head("MdReport", "2.0")
+      head("MdReport", "2.0.0")
       opt[String]('i', "setId").valueName("<id>").optional().action((x,c) => c.copy(setId = Some(x)))
         .text("The ID of the metrics/analysis/set entry. Must supply this or an entry file.")
       opt[Long]('v', "version").valueName("<version>").optional().action((x,c) => c.copy(version = Some(x)))

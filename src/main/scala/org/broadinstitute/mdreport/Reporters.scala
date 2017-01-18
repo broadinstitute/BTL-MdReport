@@ -88,8 +88,8 @@ object Reporters {
       "PicardInsertSizeMetrics.medianInsertSize" -> None,
       "PicardInsertSizeMetrics.standardDeviation" -> None,
       "PicardReadGcMetrics.meanGcContent" -> None,
-      //TODO: get EstimateLibraryComplexity metrics
-      "EstimateLibraryComplexity.pctDuplicateDeNovo" -> None,
+      "EstimateLibraryComplexity.percentDuplication" -> None,
+      "EstimateLibraryCompelxity.estimateLibrarySize" -> None,
       "ErccStats.totalErccReads" -> None,
       "ErccStats.fractionErccReads" -> None,
       "ErccStats.fractionGenomeReferenceReads" -> None,
