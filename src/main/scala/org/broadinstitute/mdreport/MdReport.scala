@@ -22,7 +22,7 @@ object MdReport extends App{
         .text("The directory to write the report to.")
       opt[String]('s', "sampleList").valueName("<sampleList>").optional().action((x, c) =>
         c.copy(sampleList = Some(x.split(",").toList)))
-        .text("A comma-separated list of sampleIds to include in the report.")
+        .text("A comma-separated list of sampleIds to include in the report. Default uses all samples for setId.")
       opt[String]('r', "reporter").valueName("<reporter>").optional().action((x,c) => c.copy(preset = Some(x)))
         .text("Use one reporter preset from the following:".concat(reporters.toString()))
       opt[String]('d', "delimiter").valueName("<delimiter>").optional().action((x,c) => c.copy(delimiter = x))

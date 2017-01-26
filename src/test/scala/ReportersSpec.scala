@@ -157,6 +157,7 @@ class ReportersSpec extends FlatSpec with Matchers{
     val port = 9101
     val server = s"$rootPath:$port/MD"
     val samples = Reporters.getSamples("SSF-2119", Some(1484340935777L), server)
+    println(samples)
     samples.length should be (24)
   }
 }

@@ -156,6 +156,7 @@ object Reporters {
       val metricsList = Await.result(result, 5 seconds)
       logger.debug(s"Metrics received from database: ${metricsList.toString}")
       val mapsList = fillMap(smartseqMap, metricsList)
+      println(mapsList)
       logger.debug(s"Metrics map created.\n$mapsList")
       writeMaps(mapsList = mapsList, outDir = outDir, id = setId, v = setVersion.get)
     }
