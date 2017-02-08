@@ -24,37 +24,37 @@ class ReportersSpec extends FlatSpec with Matchers{
   private implicit lazy val ec = system.dispatcher
   "A SmartSeqReporter" should "be created completely from a config object" in {
     val config = Config(
-      setId = Some("SSF-1859"),
-      version = Some(7),
-      sampleList = Option(List("SSF1859B12_A375_AkiYoda", "SSF1859A11_A375_AkiYoda"))
+      setId = Some("Mouse-Nigrovic"),
+      version = Some(1485289348305L),
+      sampleList = Option(List("SSF1871A09_PeterNigrovic", "SSF1871C06_PeterNigrovic"))
     )
     val ssr = new SmartSeqReporter(config)
     ssr.metrics should contain allOf (MetricsType.PicardAlignmentSummaryAnalysis,
       MetricsType.PicardInsertSizeMetrics, MetricsType.PicardMeanQualByCycle, MetricsType.PicardReadGcMetrics,
       MetricsType.ErccStats, MetricsType.RnaSeqQcStats)
-    ssr.setId should be ("SSF-1859")
-    ssr.setVersion should be (Some(7))
-    ssr.sampleList should contain allOf("SSF1859B12_A375_AkiYoda", "SSF1859A11_A375_AkiYoda")
+    ssr.setId should be ("Mouse-Nigrovic")
+    ssr.setVersion should be (Some(1485289348305L))
+    ssr.sampleList should contain allOf("SSF1871A09_PeterNigrovic", "SSF1871C06_PeterNigrovic")
   }
   it should "produce a correct sampleRefs" in {
     val config = Config(
-      setId = Some("SSF-1859"),
-      version = Some(7),
-      sampleList = Option(List("SSF1859B12_A375_AkiYoda", "SSF1859A11_A375_AkiYoda"))
+      setId = Some("Mouse-Nigrovic"),
+      version = Some(1485289348305L),
+      sampleList = Option(List("SSF1871A09_PeterNigrovic", "SSF1871C06_PeterNigrovic"))
     )
     val ssr = new SmartSeqReporter(config)
     ssr.makeSampleRefs(setId = ssr.setId,
       srefs = scala.collection.mutable.ListBuffer[SampleRef]()).toList should contain allOf
       (
-        SampleRef(sampleID = "SSF1859B12_A375_AkiYoda", setID = ssr.setId),
-        SampleRef(sampleID = "SSF1859A11_A375_AkiYoda", setID = ssr.setId)
+        SampleRef(sampleID = "SSF1871A09_PeterNigrovic", setID = ssr.setId),
+        SampleRef(sampleID = "SSF1871C06_PeterNigrovic", setID = ssr.setId)
         )
   }
   it should "produce a correct sampleReqs" in {
     val config = Config(
-      setId = Some("SSF-1859"),
-      version = Some(7),
-      sampleList = Option(List("SSF1859B12_A375_AkiYoda", "SSF1859A11_A375_AkiYoda"))
+      setId = Some("Mouse-Nigrovic"),
+      version = Some(1485289348305L),
+      sampleList = Option(List("SSF1871A09_PeterNigrovic", "SSF1871C06_PeterNigrovic"))
     )
     val ssr = new SmartSeqReporter(config)
     val sref = ssr.makeSampleRefs(setId = ssr.setId,
@@ -63,21 +63,21 @@ class ReportersSpec extends FlatSpec with Matchers{
       metrics = ssr.metrics,
       sreqs = scala.collection.mutable.ListBuffer[SampleMetricsRequest]())
     sreqs should contain allOf(
-      SampleMetricsRequest(SampleRef("SSF1859B12_A375_AkiYoda","SSF-1859"),
+      SampleMetricsRequest(SampleRef("SSF1871A09_PeterNigrovic","Mouse-Nigrovic"),
       List(MetricsType.PicardAlignmentSummaryAnalysis, MetricsType.PicardInsertSizeMetrics,
         MetricsType.PicardMeanQualByCycle, MetricsType.PicardReadGcMetrics, MetricsType.ErccStats,
-        MetricsType.RnaSeqQcStats)),
-      SampleMetricsRequest(SampleRef("SSF1859A11_A375_AkiYoda", "SSF-1859"),
+        MetricsType.RnaSeqQcStats, MetricsType.DemultiplexedStats, MetricsType.PicardEstimateLibraryComplexity)),
+      SampleMetricsRequest(SampleRef("SSF1871C06_PeterNigrovic", "Mouse-Nigrovic"),
         List(MetricsType.PicardAlignmentSummaryAnalysis, MetricsType.PicardInsertSizeMetrics,
           MetricsType.PicardMeanQualByCycle, MetricsType.PicardReadGcMetrics, MetricsType.ErccStats,
-          MetricsType.RnaSeqQcStats))
+          MetricsType.RnaSeqQcStats, MetricsType.DemultiplexedStats, MetricsType.PicardEstimateLibraryComplexity))
       )
   }
     it should "produce a correct MetricsQuery" in {
       val config = Config(
-        setId = Some("SSF-1859"),
-        version = Some(7),
-        sampleList = Option(List("SSF1859B12_A375_AkiYoda", "SSF1859A11_A375_AkiYoda"))
+        setId = Some("Mouse-Nigrovic"),
+        version = Some(1485289348305L),
+        sampleList = Option(List("SSF1871A09_PeterNigrovic", "SSF1871C06_PeterNigrovic"))
       )
       val ssr = new SmartSeqReporter(config)
       val sref = ssr.makeSampleRefs(setId = ssr.setId,
@@ -91,14 +91,14 @@ class ReportersSpec extends FlatSpec with Matchers{
           id = ssr.setId,
           version = ssr.setVersion,
           List(
-        SampleMetricsRequest(SampleRef("SSF1859B12_A375_AkiYoda","SSF-1859"),
+        SampleMetricsRequest(SampleRef("SSF1871A09_PeterNigrovic","Mouse-Nigrovic"),
           List(MetricsType.PicardAlignmentSummaryAnalysis, MetricsType.PicardInsertSizeMetrics,
             MetricsType.PicardMeanQualByCycle, MetricsType.PicardReadGcMetrics, MetricsType.ErccStats,
-            MetricsType.RnaSeqQcStats)),
-        SampleMetricsRequest(SampleRef("SSF1859A11_A375_AkiYoda", "SSF-1859"),
+            MetricsType.RnaSeqQcStats,  MetricsType.DemultiplexedStats, MetricsType.PicardEstimateLibraryComplexity)),
+        SampleMetricsRequest(SampleRef("SSF1871C06_PeterNigrovic", "Mouse-Nigrovic"),
           List(MetricsType.PicardAlignmentSummaryAnalysis, MetricsType.PicardInsertSizeMetrics,
             MetricsType.PicardMeanQualByCycle, MetricsType.PicardReadGcMetrics, MetricsType.ErccStats,
-            MetricsType.RnaSeqQcStats))
+            MetricsType.RnaSeqQcStats, MetricsType.DemultiplexedStats,  MetricsType.PicardEstimateLibraryComplexity))
         )
       )
     )
