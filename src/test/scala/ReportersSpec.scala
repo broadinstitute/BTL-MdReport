@@ -106,7 +106,7 @@ class ReportersSpec extends FlatSpec with Matchers{
   it should "return a a filled map" in {
     val config = Config(
       setId = Some("Mouse-Nigrovic"),
-      version = Some(1483633919195L),
+      version = Some(1485289348305L),
       test = true,
       sampleList = Option(List("SSF1871C06_PeterNigrovic", "SSF1871D06_PeterNigrovic"))
     )
@@ -123,19 +123,12 @@ class ReportersSpec extends FlatSpec with Matchers{
     val smartseq_map = new SmartSeqReporter(config).smartseqMap
     val myMap = ssr.fillMap(smartseq_map, response)
     ssr.writeMaps(myMap, "C:\\Dev\\Scala\\MdReport\\", config.setId.get, config.version.get)
-    class getSamples extends Requester {
-      var port = 9101
-      val path = s"http://btllims.broadinstitute.org:$port/MD/find/metrics"
-      def run() = {
-        doFind("SSF-1859", None)
-      }
-    }
     myMap should not contain None
   }
   "A CustomReporter" should "produce a custom report object" in {
     val config = Config(
       setId = Some("Mouse-Nigrovic"),
-      version = Some(1483633919195L),
+      version = Some(1485289348305L),
       test = true,
       sampleList = Option(List("SSF1871C06_PeterNigrovic", "SSF1871D06_PeterNigrovic")),
       rdfFile = Some("C:\\Dev\\Scala\\MdReport\\src\\test\\resources\\rdf.tsv"),
@@ -156,8 +149,7 @@ class ReportersSpec extends FlatSpec with Matchers{
     val rootPath = "http://btllims.broadinstitute.org"
     val port = 9101
     val server = s"$rootPath:$port/MD"
-    val samples = Reporters.getSamples("SSF-2119", Some(1484340935777L), server)
-    println(samples)
-    samples.length should be (24)
+    val samples = Reporters.getSamples("Mouse-Nigrovic", Some(1485289348305L), server)
+    samples.length should be (96)
   }
 }
