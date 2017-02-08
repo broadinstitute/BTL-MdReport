@@ -31,7 +31,8 @@ object Reporters {
     val json = MetricsSamplesQuery.writeJson(mq)
     val future = Request.doRequest(path, json)
     val result = future.flatMap(response => Unmarshal(response.entity).to[MetricSamples])
-    val sampleList = Await.result(result, 5 seconds).sampleRequests.toIterator
+    val awaited = Await.result(result, 5 seconds)
+    val sampleList = awaited.sampleRequests.toIterator
     def makeSampleList(lb: mutable.ListBuffer[String]): List[String] = {
       @tailrec
       def sampleAcc(lb: mutable.ListBuffer[String]): mutable.ListBuffer[String] = {
@@ -63,7 +64,9 @@ object Reporters {
       MetricsType.PicardMeanQualByCycle,
       MetricsType.PicardReadGcMetrics,
       MetricsType.ErccStats,
-      MetricsType.RnaSeqQcStats
+      MetricsType.RnaSeqQcStats,
+      MetricsType.DemultiplexedStats,
+      MetricsType.PicardEstimateLibraryComplexity
     )
 
     val smartseqMap: mutable.LinkedHashMap[String, Any] = mutable.LinkedHashMap(
@@ -88,8 +91,7 @@ object Reporters {
       "PicardInsertSizeMetrics.medianInsertSize" -> None,
       "PicardInsertSizeMetrics.standardDeviation" -> None,
       "PicardReadGcMetrics.meanGcContent" -> None,
-      "EstimateLibraryComplexity.percentDuplication" -> None,
-      "EstimateLibraryCompelxity.estimateLibrarySize" -> None,
+      "PicardEstimateLibraryComplexity.percentDuplication" -> None,
       "ErccStats.totalErccReads" -> None,
       "ErccStats.fractionErccReads" -> None,
       "ErccStats.fractionGenomeReferenceReads" -> None,
@@ -156,7 +158,6 @@ object Reporters {
       val metricsList = Await.result(result, 5 seconds)
       logger.debug(s"Metrics received from database: ${metricsList.toString}")
       val mapsList = fillMap(smartseqMap, metricsList)
-      println(mapsList)
       logger.debug(s"Metrics map created.\n$mapsList")
       writeMaps(mapsList = mapsList, outDir = outDir, id = setId, v = setVersion.get)
     }
