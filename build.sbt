@@ -1,6 +1,6 @@
 name := "MdReport"
 
-version := "2.2.0"
+version := "2017.2.2"
 
 scalaVersion := "2.11.8"
 
@@ -16,7 +16,6 @@ libraryDependencies ++= Seq(
   "com.typesafe.akka" %% "akka-http-testkit" % "2.4.11" % "test",
   "org.json4s" %% "json4s-jackson" % "3.2.11",
   "com.lambdaworks" %% "jacks" % "2.3.3",
-  "org.broadinstitute" %% "jsonutil" % "1.0",
   "com.github.scopt" %% "scopt" % "3.5.0"
 )
 
