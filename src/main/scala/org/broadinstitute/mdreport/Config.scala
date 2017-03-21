@@ -13,5 +13,6 @@ case class Config(
                   sampleList: Option[List[String]] = None,
                   delimiter: String = ",",
                   rdfFile: Option[String] = None,
+                  sampleFile: Option[String] = None,
                   test: Boolean = false
                  )

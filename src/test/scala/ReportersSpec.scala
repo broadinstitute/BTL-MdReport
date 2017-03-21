@@ -11,7 +11,6 @@ import org.broadinstitute.MD.rest.SampleMetricsRequest
 import scala.concurrent.duration._
 import scala.concurrent.Await
 import org.broadinstitute.MD.types.marshallers.Marshallers._
-import org.broadinstitute.mdreport.ReporterTraits.Requester
 import org.broadinstitute.mdreport.Reporters
 
 /**

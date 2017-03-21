@@ -29,6 +29,8 @@ object MdReport extends App{
         .text("Specify delimiter. Default is comma.")
       opt[String]('f', "rdfFile").valueName("<rdfFile>").optional().action((x, c) => c.copy(rdfFile = Some(x)))
         .text("Optional report definition file for custom reports.")
+      opt[String]('S', "sampleFile").valueName("<sampleFile>").optional().action((x, c) => c.copy(sampleFile = Some(x)))
+        .text("Optional input sample TSV used to initiate pipeline. Used for populating barcode in report.")
       opt[String]('t', "test").hidden().action((_, c) => c.copy(test = true))
         .text("Enable test mode which retrieves reports from MDBeta.")
       help("help").text("Prints this help text.")

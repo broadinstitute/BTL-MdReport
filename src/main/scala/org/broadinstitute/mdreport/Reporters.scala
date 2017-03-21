@@ -49,15 +49,15 @@ object Reporters {
   }
 
   class SmartSeqReporter(config: Config) extends Metrics with Samples with Requester with Output with MapMaker with Log{
-    val setId = config.setId.get
-    val setVersion = config.version
+    val setId: String = config.setId.get
+    val setVersion: Option[Long] = config.version
     var port = 9100
     if (config.test) port = 9101
     val server = s"$rootPath:$port/MD"
     val path = s"$server/metricsQuery"
-    val sampleList = config.sampleList.getOrElse(getSamples(setId, setVersion, server))
+    val sampleList: List[String] = config.sampleList.getOrElse(getSamples(setId, setVersion, server))
     val delimiter = "\t"
-    val outDir = config.outDir
+    val outDir: String = config.outDir
     val metrics: List[MetricsType] = List(
       MetricsType.PicardAlignmentSummaryAnalysis,
       MetricsType.PicardInsertSizeMetrics,
@@ -68,7 +68,6 @@ object Reporters {
       MetricsType.DemultiplexedStats,
       MetricsType.PicardEstimateLibraryComplexity
     )
-
     val smartseqMap: mutable.LinkedHashMap[String, Any] = mutable.LinkedHashMap(
       "sampleName" -> None,
       //TODO: Get barcodes from SmartSeq SSF walkup file.
