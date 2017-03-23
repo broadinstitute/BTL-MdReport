@@ -44,7 +44,7 @@ object ReporterTraits {
       * @param l The logger object
       * @param t The reporter type as a string.
       */
-    def logInit(l: Logger, t: String) = {
+    def logInit(l: Logger, t: String): Unit = {
       l.debug(List
       (s"$t Reporter Configuration",
         s"setId=$setId",
@@ -118,7 +118,7 @@ object ReporterTraits {
   }
 
   trait LegacyExtractor {
-    def legacyExtract(jsonList: List[BaseJson]) = {
+    def legacyExtract(jsonList: List[BaseJson]): List[String] = {
       var metrics: List[String] = List()
       for (x <- jsonList.toIterator) {
         x match {
@@ -135,17 +135,17 @@ object ReporterTraits {
     we need to explicitly get the right totalReads(PAIR) value. Currently just relying on the right one
     being the last one, which isn't a good idea.
      */
-    def fillMap(m: mutable.LinkedHashMap[String, Any], r: List[SampleMetrics]) = {
+    def fillMap(m: mutable.LinkedHashMap[String, Any], r: List[SampleMetrics]): List[ListMap[String, Any]] = {
       var maps = mutable.ListBuffer[ListMap[String, Any]]()
       for (item <- r) {
         m("sampleName") = item.sampleRef.sampleID
         for (x <- item.metrics) {
           x.metric.makeValList(0, "", (k, i, v) => {
             if (m.contains(k)) m(k) = v
-          }
+            }
           )
         }
-        //For some reason m mutates prior to entering into listbuffer. This converts m to immutable. Copied from:
+        // For some reason m mutates prior to entering into listbuffer. This converts m to immutable. Copied from:
         // http://stackoverflow.com/questions/6199186/scala-linkedhashmap-tomap-preserves-order
         def toMap[A, B](lhm: mutable.LinkedHashMap[A, B]): ListMap[A, B] = ListMap(lhm.toSeq: _*)
         val lm = toMap(m)
@@ -157,13 +157,13 @@ object ReporterTraits {
 
   trait Output {
     val delimiter: String
-    def legacyWrite(metrics: List[String], outDir: String, id: String, v: Long) = {
+    def legacyWrite(metrics: List[String], outDir: String, id: String, v: Long): Unit = {
       val pw = new PrintWriter(s"$outDir/$id.$v.MdReport.csv")
       for (m <- metrics) pw.write(m + "\n")
       pw.close()
     }
     def writeMaps
-    (mapsList: List[ListMap[String, Any]], outDir: String, id: String, v: Long) = {
+    (mapsList: List[ListMap[String, Any]], outDir: String, id: String, v: Long): Unit = {
       val rawHeaders = mapsList.head.keysIterator
       def getHeaders(h: scala.collection.mutable.ListBuffer[String]): List[String] = {
         @tailrec

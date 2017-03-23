@@ -1,6 +1,7 @@
 package org.broadinstitute.mdreport
 import com.lambdaworks.jacks.JacksMapper
 import com.typesafe.scalalogging.Logger
+import scopt.OptionParser
 import scala.io.Source
 
 /**
@@ -9,7 +10,7 @@ import scala.io.Source
 object MdReport extends App{
   private val logger = Logger("MdReport")
   private val reporters = List("SmartSeqReporter, LegacyReporter, CustomReporter")
-  def parser = {
+  def parser: OptionParser[Config] = {
     new scopt.OptionParser[Config]("MdReport") {
       head("MdReport", "2.0.0")
       opt[String]('i', "setId").valueName("<id>").optional().action((x,c) => c.copy(setId = Some(x)))

@@ -12,7 +12,7 @@ import scala.concurrent.duration._
 import scala.concurrent.Await
 import org.broadinstitute.MD.types.marshallers.Marshallers._
 import org.broadinstitute.mdreport.Reporters
-
+import scala.language.postfixOps
 /**
   * Created by amr on 11/2/2016.
   */
@@ -30,7 +30,7 @@ class ReportersSpec extends FlatSpec with Matchers{
     val ssr = new SmartSeqReporter(config)
     ssr.metrics should contain allOf (MetricsType.PicardAlignmentSummaryAnalysis,
       MetricsType.PicardInsertSizeMetrics, MetricsType.PicardMeanQualByCycle, MetricsType.PicardReadGcMetrics,
-      MetricsType.ErccStats, MetricsType.RnaSeqQcStats)
+      MetricsType.ErccStats, MetricsType.RnaSeqQcStats, MetricsType.SampleSheet)
     ssr.setId should be ("Mouse-Nigrovic")
     ssr.setVersion should be (Some(1485289348305L))
     ssr.sampleList should contain allOf("SSF1871A09_PeterNigrovic", "SSF1871C06_PeterNigrovic")
@@ -65,11 +65,13 @@ class ReportersSpec extends FlatSpec with Matchers{
       SampleMetricsRequest(SampleRef("SSF1871A09_PeterNigrovic","Mouse-Nigrovic"),
       List(MetricsType.PicardAlignmentSummaryAnalysis, MetricsType.PicardInsertSizeMetrics,
         MetricsType.PicardMeanQualByCycle, MetricsType.PicardReadGcMetrics, MetricsType.ErccStats,
-        MetricsType.RnaSeqQcStats, MetricsType.DemultiplexedStats, MetricsType.PicardEstimateLibraryComplexity)),
+        MetricsType.RnaSeqQcStats, MetricsType.DemultiplexedStats, MetricsType.PicardEstimateLibraryComplexity,
+        MetricsType.SampleSheet)),
       SampleMetricsRequest(SampleRef("SSF1871C06_PeterNigrovic", "Mouse-Nigrovic"),
         List(MetricsType.PicardAlignmentSummaryAnalysis, MetricsType.PicardInsertSizeMetrics,
           MetricsType.PicardMeanQualByCycle, MetricsType.PicardReadGcMetrics, MetricsType.ErccStats,
-          MetricsType.RnaSeqQcStats, MetricsType.DemultiplexedStats, MetricsType.PicardEstimateLibraryComplexity))
+          MetricsType.RnaSeqQcStats, MetricsType.DemultiplexedStats, MetricsType.PicardEstimateLibraryComplexity,
+          MetricsType.SampleSheet))
       )
   }
     it should "produce a correct MetricsQuery" in {
@@ -93,11 +95,13 @@ class ReportersSpec extends FlatSpec with Matchers{
         SampleMetricsRequest(SampleRef("SSF1871A09_PeterNigrovic","Mouse-Nigrovic"),
           List(MetricsType.PicardAlignmentSummaryAnalysis, MetricsType.PicardInsertSizeMetrics,
             MetricsType.PicardMeanQualByCycle, MetricsType.PicardReadGcMetrics, MetricsType.ErccStats,
-            MetricsType.RnaSeqQcStats,  MetricsType.DemultiplexedStats, MetricsType.PicardEstimateLibraryComplexity)),
+            MetricsType.RnaSeqQcStats,  MetricsType.DemultiplexedStats, MetricsType.PicardEstimateLibraryComplexity,
+            MetricsType.SampleSheet)),
         SampleMetricsRequest(SampleRef("SSF1871C06_PeterNigrovic", "Mouse-Nigrovic"),
           List(MetricsType.PicardAlignmentSummaryAnalysis, MetricsType.PicardInsertSizeMetrics,
             MetricsType.PicardMeanQualByCycle, MetricsType.PicardReadGcMetrics, MetricsType.ErccStats,
-            MetricsType.RnaSeqQcStats, MetricsType.DemultiplexedStats,  MetricsType.PicardEstimateLibraryComplexity))
+            MetricsType.RnaSeqQcStats, MetricsType.DemultiplexedStats,  MetricsType.PicardEstimateLibraryComplexity,
+            MetricsType.SampleSheet))
         )
       )
     )

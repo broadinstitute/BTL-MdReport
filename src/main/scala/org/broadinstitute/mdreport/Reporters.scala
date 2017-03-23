@@ -15,6 +15,7 @@ import org.broadinstitute.MD.types.{BaseJson, SampleRef}
 import scala.annotation.tailrec
 import scala.collection.immutable.ListMap
 import scala.collection.mutable
+import scala.language.postfixOps
 
 /**
   * Created by amr on 10/26/2016.
@@ -24,7 +25,10 @@ object Reporters {
   private implicit lazy val system = ActorSystem()
   private implicit lazy val materializer = ActorMaterializer()
   private implicit lazy val ec = system.dispatcher
+  // rootPath for production
   private val rootPath = "http://btllims.broadinstitute.org"
+  // rootPath for Amr's localhost testing.
+  // private val rootPath = "http://GP3C5-33B.broadinstitute.org"
   def getSamples(setId: String, version: Option[Long], server: String): List[String] = {
     val path = s"$server/metricsSamplesQuery"
     val mq = MetricsSamplesQuery(setId, version)
@@ -66,13 +70,13 @@ object Reporters {
       MetricsType.ErccStats,
       MetricsType.RnaSeqQcStats,
       MetricsType.DemultiplexedStats,
-      MetricsType.PicardEstimateLibraryComplexity
+      MetricsType.PicardEstimateLibraryComplexity,
+      MetricsType.SampleSheet
     )
     val smartseqMap: mutable.LinkedHashMap[String, Any] = mutable.LinkedHashMap(
       "sampleName" -> None,
-      //TODO: Get barcodes from SmartSeq SSF walkup file.
-      "indexBarcode1" -> None,
-      "indexBarcode2" -> None,
+      "SampleSheet.indexBarcode1" -> None,
+      "SampleSheet.indexBarcode2" -> None,
       "PicardAlignmentSummaryAnalysis.PicardAlignmentSummaryMetrics.totalReads" -> None,
       "DemultiplexedStats.pctOfTotalDemultiplexed" -> None,
       "PicardAlignmentSummaryAnalysis.PicardAlignmentSummaryMetrics.meanReadLength" -> None,
@@ -142,7 +146,7 @@ object Reporters {
       "RnaSeqQcStats.Notes" -> None
     )
     logInit(logger, "SmartSeqReporter")
-    def run() = {
+    def run(): Unit = {
       logger.info("Creating sampleRefs.")
       val sampleRefs = makeSampleRefs(setId = setId,
         srefs = scala.collection.mutable.ListBuffer[SampleRef]()).toIterator
@@ -163,17 +167,17 @@ object Reporters {
   }
 
   class CustomReporter(config: Config) extends Metrics with Samples with Requester with Output with MapMaker with Log{
-    val setId = config.setId.get
-    val setVersion = config.version
-    val delimiter = config.delimiter
-    val outDir = config.outDir
+    val setId: String = config.setId.get
+    val setVersion: Option[Long] = config.version
+    val delimiter: String = config.delimiter
+    val outDir: String = config.outDir
     var port = 9100
     if (config.test) port = 9101
     val server = s"$rootPath:$port/MD"
     val path = s"$server/metricsQuery"
-    val sampleList = config.sampleList.getOrElse(getSamples(setId, setVersion, server))
-    val customReport = parseRdf(config.rdfFile.get)
-    val metrics = customReport.contents.keys.toList
+    val sampleList: List[String] = config.sampleList.getOrElse(getSamples(setId, setVersion, server))
+    val customReport: CustomReport = parseRdf(config.rdfFile.get)
+    val metrics: List[MetricsType.MetricsType] = customReport.contents.keys.toList
     logInit(logger, "CustomReporter")
     def parseRdf(f: String): CustomReport = {
       val delim = "\t"
@@ -194,7 +198,7 @@ object Reporters {
       }
       m
     }
-    def run() = {
+    def run(): Unit = {
       val sampleRefs = makeSampleRefs(setId = setId,
         srefs = scala.collection.mutable.ListBuffer[SampleRef]()).toIterator
       val sampleRequests = makeSampleRequests(sr = sampleRefs,
@@ -215,13 +219,13 @@ object Reporters {
     val delimiter = ","
     if (config.test) port = 9101
     val path = s"http://btllims.broadinstitute.org:$port/MD/find/metrics"
-    val setId = config.setId.get
-    val setVersion = config.version
+    val setId: String = config.setId.get
+    val setVersion: Option[Long] = config.version
     //Passing empty lists to keep logInit happy for now. Eventually may be able to populate these for legacy reporter.
     val sampleList = List()
     val metrics = List()
     logInit(logger, "LegacyReporter")
-    def run() = {
+    def run(): Unit = {
       val request = doFind(setId, setVersion)
       val result = request.flatMap(response => Unmarshal(response.entity).to[List[BaseJson]])
       val metrics = Await.result(result, 5 seconds)
