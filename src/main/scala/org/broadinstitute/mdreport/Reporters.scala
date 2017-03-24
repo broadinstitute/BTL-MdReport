@@ -30,7 +30,7 @@ object Reporters {
   // rootPath for my work localhost testing.
   // private val rootPath = "http://GP3C5-33B.broadinstitute.org"
   // rootpath for home localhost testing
-  //private val rootPath = "http://osiris-pc:9100"
+  //private val rootPath = "http://osiris-pc"
   def getSamples(setId: String, version: Option[Long], server: String): List[String] = {
     val path = s"$server/metricsSamplesQuery"
     val mq = MetricsSamplesQuery(setId, version)
