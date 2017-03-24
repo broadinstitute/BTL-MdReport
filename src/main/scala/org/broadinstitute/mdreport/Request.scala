@@ -28,7 +28,7 @@ object Request {
   {
     logger.info("Doing Request...")
     Http().singleRequest(
-      Post(uri = path, entity = HttpEntity(contentType = `application/json`, string = json))
+      Post(path, HttpEntity(contentType = `application/json`, string = json))
     )
   }
 }
