@@ -80,7 +80,7 @@ object Reporters {
       "SampleSheet.indexBarcode1" -> None,
       "SampleSheet.indexBarcode2" -> None,
       "PicardAlignmentSummaryAnalysis.PicardAlignmentSummaryMetrics.totalReads" -> None,
-      "DemultiplexedStats.pctOfTotalDemultiplexed" -> None,
+      "DemultiplexedStats.pctOfMultiplexedReads" -> None,
       "PicardAlignmentSummaryAnalysis.PicardAlignmentSummaryMetrics.meanReadLength" -> None,
       "PicardAlignmentSummaryAnalysis.PicardAlignmentSummaryMetrics.pfReads" -> None,
       "PicardAlignmentSummaryAnalysis.PicardAlignmentSummaryMetrics.pctPfReads" -> None,
