@@ -159,10 +159,15 @@ object Reporters {
       logger.info("Creating MetricsQuery.")
       val mq = makeMetricsQuery(sampleRequests)
       val query = doQuery(mq)
-      val result = query.flatMap(response => Unmarshal(response.entity).to[List[SampleMetrics]])
-      val metricsList = Await.result(result, 5 seconds)
+      // TODO: Theory is that by awaiting the result of query, issues where server does not response will be handled.
+      // Would like to review this solution with someone before implementing it.
+      val q_res = Await.result(query, 30 seconds)
+      val metricsList = Unmarshal(q_res.entity).to[List[SampleMetrics]]
+      //      val result = query.flatMap(response => Unmarshal(response.entity).to[List[SampleMetrics]])
+      //      val metricsList = Await.result(result, 5 seconds)
+      logger.debug("test")
       logger.debug(s"Metrics received from database: ${metricsList.toString}")
-      val mapsList = fillMap(smartseqMap, metricsList)
+      val mapsList = fillMap(smartseqMap, Await.result(metricsList, 5 seconds))
       logger.debug(s"Metrics map created.\n$mapsList")
       writeMaps(mapsList = mapsList, outDir = outDir, id = setId, v = setVersion.get)
     }
