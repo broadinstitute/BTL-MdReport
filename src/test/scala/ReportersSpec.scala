@@ -65,12 +65,12 @@ class ReportersSpec extends FlatSpec with Matchers{
       SampleMetricsRequest(SampleRef("SSF1871A09_PeterNigrovic","Mouse-Nigrovic"),
       List(MetricsType.PicardAlignmentSummaryAnalysis, MetricsType.PicardInsertSizeMetrics,
         MetricsType.PicardMeanQualByCycle, MetricsType.PicardReadGcMetrics, MetricsType.ErccStats,
-        MetricsType.RnaSeqQcStats, MetricsType.DemultiplexedStats, MetricsType.PicardEstimateLibraryComplexity,
+        MetricsType.RnaSeqQcStats, MetricsType.DemultiplexedMultipleStats, MetricsType.PicardEstimateLibraryComplexity,
         MetricsType.SampleSheet)),
       SampleMetricsRequest(SampleRef("SSF1871C06_PeterNigrovic", "Mouse-Nigrovic"),
         List(MetricsType.PicardAlignmentSummaryAnalysis, MetricsType.PicardInsertSizeMetrics,
           MetricsType.PicardMeanQualByCycle, MetricsType.PicardReadGcMetrics, MetricsType.ErccStats,
-          MetricsType.RnaSeqQcStats, MetricsType.DemultiplexedStats, MetricsType.PicardEstimateLibraryComplexity,
+          MetricsType.RnaSeqQcStats, MetricsType.DemultiplexedMultipleStats, MetricsType.PicardEstimateLibraryComplexity,
           MetricsType.SampleSheet))
       )
   }
@@ -95,12 +95,12 @@ class ReportersSpec extends FlatSpec with Matchers{
         SampleMetricsRequest(SampleRef("SSF1871A09_PeterNigrovic","Mouse-Nigrovic"),
           List(MetricsType.PicardAlignmentSummaryAnalysis, MetricsType.PicardInsertSizeMetrics,
             MetricsType.PicardMeanQualByCycle, MetricsType.PicardReadGcMetrics, MetricsType.ErccStats,
-            MetricsType.RnaSeqQcStats,  MetricsType.DemultiplexedStats, MetricsType.PicardEstimateLibraryComplexity,
+            MetricsType.RnaSeqQcStats,  MetricsType.DemultiplexedMultipleStats, MetricsType.PicardEstimateLibraryComplexity,
             MetricsType.SampleSheet)),
         SampleMetricsRequest(SampleRef("SSF1871C06_PeterNigrovic", "Mouse-Nigrovic"),
           List(MetricsType.PicardAlignmentSummaryAnalysis, MetricsType.PicardInsertSizeMetrics,
             MetricsType.PicardMeanQualByCycle, MetricsType.PicardReadGcMetrics, MetricsType.ErccStats,
-            MetricsType.RnaSeqQcStats, MetricsType.DemultiplexedStats,  MetricsType.PicardEstimateLibraryComplexity,
+            MetricsType.RnaSeqQcStats, MetricsType.DemultiplexedMultipleStats,  MetricsType.PicardEstimateLibraryComplexity,
             MetricsType.SampleSheet))
         )
       )
