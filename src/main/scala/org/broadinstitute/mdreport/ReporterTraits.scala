@@ -1,6 +1,5 @@
 package org.broadinstitute.mdreport
 import java.io.PrintWriter
-
 import akka.http.scaladsl.model.HttpResponse
 import com.typesafe.scalalogging.Logger
 import org.broadinstitute.MD.rest.{MetricsQuery, SampleMetrics}
@@ -122,6 +121,7 @@ object ReporterTraits {
             case _ => retries = retries - 1
               doQuery(mq)
           }
+        case _: Throwable => None
       }
     }
     def doFind(id: String, version: Option[Long]): Future[HttpResponse] = {
