@@ -121,12 +121,17 @@ class ReportersSpec extends FlatSpec with Matchers{
       sreqs = scala.collection.mutable.ListBuffer[SampleMetricsRequest]())
     val mq = ssr.makeMetricsQuery(sreqs)
     val query = ssr.doQuery(mq)
-    val result = query.flatMap(response => Unmarshal(response.entity).to[List[SampleMetrics]])
-    val response = Await.result(result, 5 seconds)
-    val smartseq_map = new SmartSeqReporter(config).smartseqMap
-    val myMap = ssr.fillMap(smartseq_map, response)
-    ssr.writeMaps(myMap, "C:\\Dev\\Scala\\MdReport\\", config.setId.get, config.version.get)
-    myMap should not contain None
+    query match {
+      case Some(r) =>
+        val result = Unmarshal(r.entity).to[List[SampleMetrics]]
+        val response = Await.result(result, 5 seconds)
+        val smartseq_map = new SmartSeqReporter(config).smartseqMap
+        val myMap = ssr.fillMap(smartseq_map, response)
+        ssr.writeMaps(myMap, "C:\\Dev\\Scala\\MdReport\\", config.setId.get, config.version.get)
+        myMap should not contain None
+      case None => None
+    }
+
   }
   "A CustomReporter" should "produce a custom report object" in {
     val config = Config(
@@ -134,7 +139,7 @@ class ReportersSpec extends FlatSpec with Matchers{
       version = Some(1485289348305L),
       test = true,
       sampleList = Option(List("SSF1871C06_PeterNigrovic", "SSF1871D06_PeterNigrovic")),
-      rdfFile = Some("C:\\Dev\\Scala\\MdReport\\src\\test\\resources\\rdf.tsv"),
+      rdfFile = Some("D:\\Dev\\Scala\\MdReport\\src\\test\\resources\\rdf.tsv"),
       outDir = "C:\\Dev\\Scala\\MdReport\\"
     )
     val cr = new CustomReporter(config)
