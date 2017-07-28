@@ -163,9 +163,9 @@ object Reporters {
       val query = doQuery(mq)
       query match {
         case Some(r) =>
-          val metricsList = Unmarshal(r.entity).to[List[SampleMetrics]]
+          val metricsList = Await.result(Unmarshal(r.entity).to[List[SampleMetrics]], 5 seconds)
           logger.debug(s"Metrics received from database: ${metricsList.toString}")
-          val mapsList = fillMap(smartseqMap, Await.result(metricsList, 5 seconds))
+          val mapsList = fillMap(smartseqMap, metricsList)
           logger.debug(s"Metrics map created.\n$mapsList")
           writeMaps(mapsList = mapsList, outDir = outDir, id = setId, v = setVersion.get)
         case None => failureExit("Metrics not received from database.")
