@@ -6,11 +6,13 @@ import org.broadinstitute.MD.rest.{MetricsQuery, SampleMetrics}
 import org.broadinstitute.MD.rest.SampleMetricsRequest
 import org.broadinstitute.MD.types.{BaseJson, SampleRef}
 import org.broadinstitute.MD.types.metrics.MetricsType
+import org.broadinstitute.mdreport.Reporters.logger
+import scala.concurrent.duration._
 import scala.annotation.tailrec
 import scala.collection.immutable.ListMap
 import scala.collection.mutable
 import scala.collection.mutable.ListBuffer
-import scala.concurrent.Future
+import scala.concurrent.{Await, Future, TimeoutException}
 
 /**
   * Created by amr on 10/26/2016.
@@ -103,9 +105,24 @@ object ReporterTraits {
   trait Requester {
     val path: String
     var port: Int // This is var because port can be reassigned if using test DB.
-    def doQuery(mq: MetricsQuery): Future[HttpResponse] = {
+    var retries: Int
+    def doQuery(mq: MetricsQuery): Option[HttpResponse] = {
       val json = MetricsQuery.writeJson(mq)
-      Request.doRequest(path = path, json = json)
+      val query = Request.doRequest(path = path, json = json)
+      try {
+        Some(Await.result(query, 10 seconds))
+      } catch {
+        case e: TimeoutException => logger.error(e.getMessage)
+          logger.info("Trying request again.")
+          retries match {
+            case 0 =>
+              logger.error("Maximum retries reached.")
+              None
+            case _ => retries = retries - 1
+              doQuery(mq)
+          }
+        case _: Throwable => None
+      }
     }
     def doFind(id: String, version: Option[Long]): Future[HttpResponse] = {
       version match {

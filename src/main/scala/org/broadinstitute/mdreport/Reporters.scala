@@ -3,18 +3,19 @@ import akka.actor.ActorSystem
 import akka.http.scaladsl.unmarshalling.Unmarshal
 import akka.stream.ActorMaterializer
 import com.typesafe.scalalogging.Logger
-import org.broadinstitute.MD.rest.{SampleMetricsRequest, SampleMetrics, MetricSamples, MetricsSamplesQuery}
+import org.broadinstitute.MD.rest.{MetricSamples, MetricsSamplesQuery, SampleMetrics, SampleMetricsRequest}
 import org.broadinstitute.MD.types.marshallers.Marshallers._
 import org.broadinstitute.MD.types.metrics.MetricsType.MetricsType
 import org.broadinstitute.MD.types.metrics.{Metrics => _, _}
 import org.broadinstitute.mdreport.ReporterTraits._
 import org.broadinstitute.mdreport.MdReport.failureExit
 import scala.concurrent.duration._
-import scala.concurrent.Await
+import scala.concurrent.{Await, TimeoutException}
 import org.broadinstitute.MD.types.{BaseJson, SampleRef}
 import scala.annotation.tailrec
 import scala.collection.immutable.ListMap
 import scala.collection.mutable
+import scala.util.Try
 import scala.language.postfixOps
 
 /**
@@ -55,6 +56,7 @@ object Reporters {
   }
 
   class SmartSeqReporter(config: Config) extends Metrics with Samples with Requester with Output with MapMaker with Log{
+    var retries = 4
     val setId: String = config.setId.get
     val setVersion: Option[Long] = config.version
     var port = 9100
@@ -71,7 +73,7 @@ object Reporters {
       MetricsType.PicardReadGcMetrics,
       MetricsType.ErccStats,
       MetricsType.RnaSeqQcStats,
-      MetricsType.DemultiplexedStats,
+      MetricsType.DemultiplexedMultipleStats,
       MetricsType.PicardEstimateLibraryComplexity,
       MetricsType.SampleSheet
     )
@@ -159,21 +161,20 @@ object Reporters {
       logger.info("Creating MetricsQuery.")
       val mq = makeMetricsQuery(sampleRequests)
       val query = doQuery(mq)
-      // TODO: Theory is that by awaiting the result of query, issues where server does not response will be handled.
-      // Would like to review this solution with someone before implementing it.
-      val q_res = Await.result(query, 30 seconds)
-      val metricsList = Unmarshal(q_res.entity).to[List[SampleMetrics]]
-      //      val result = query.flatMap(response => Unmarshal(response.entity).to[List[SampleMetrics]])
-      //      val metricsList = Await.result(result, 5 seconds)
-      logger.debug("test")
-      logger.debug(s"Metrics received from database: ${metricsList.toString}")
-      val mapsList = fillMap(smartseqMap, Await.result(metricsList, 5 seconds))
-      logger.debug(s"Metrics map created.\n$mapsList")
-      writeMaps(mapsList = mapsList, outDir = outDir, id = setId, v = setVersion.get)
+      query match {
+        case Some(r) =>
+          val metricsList = Await.result(Unmarshal(r.entity).to[List[SampleMetrics]], 5 seconds)
+          logger.debug(s"Metrics received from database: ${metricsList.toString}")
+          val mapsList = fillMap(smartseqMap, metricsList)
+          logger.debug(s"Metrics map created.\n$mapsList")
+          writeMaps(mapsList = mapsList, outDir = outDir, id = setId, v = setVersion.get)
+        case None => failureExit("Metrics not received from database.")
+      }
     }
   }
 
   class CustomReporter(config: Config) extends Metrics with Samples with Requester with Output with MapMaker with Log{
+    var retries = 4
     val setId: String = config.setId.get
     val setVersion: Option[Long] = config.version
     val delimiter: String = config.delimiter
@@ -212,17 +213,24 @@ object Reporters {
         metrics = metrics,
         sreqs = scala.collection.mutable.ListBuffer[SampleMetricsRequest]())
       val mq = makeMetricsQuery(sampleRequests)
-      val query = doQuery(mq)
-      val result = query.flatMap(response => Unmarshal(response.entity).to[List[SampleMetrics]])
       val customMap = makeCustomMap(customReport)
-      val metricsList = Await.result(result, 5 seconds)
-      val mapsList = fillMap(customMap, metricsList)
-      writeMaps(mapsList = mapsList, outDir = outDir, id = setId, v = setVersion.get)
+
+      val query = doQuery(mq)
+      query match {
+        case Some(r) =>
+          val metricsList = Unmarshal(r.entity).to[List[SampleMetrics]]
+          logger.debug(s"Metrics received from database: ${metricsList.toString}")
+          val mapsList = fillMap(customMap, Await.result(metricsList, 5 seconds))
+          logger.debug(s"Metrics map created.\n$mapsList")
+          writeMaps(mapsList = mapsList, outDir = outDir, id = setId, v = setVersion.get)
+        case None => failureExit("Metrics not received from database.")
+      }
     }
   }
 
   class LegacyReporter(config: Config) extends Requester with LegacyExtractor with Output with Log{
     var port = 9100
+    var retries = 4
     val delimiter = ","
     if (config.test) port = 9101
     val path = s"http://btllims.broadinstitute.org:$port/MD/find/metrics"

@@ -1,6 +1,6 @@
 name := "MdReport"
 
-version := "2017.3.1"
+version := "2017.3.2"
 
 scalaVersion := "2.11.8"
 
