@@ -163,7 +163,7 @@ object Reporters {
       val query = doQuery(mq)
       query match {
         case Some(r) =>
-          val metricsList = Await.result(Unmarshal(r.entity).to[List[SampleMetrics]], 5 seconds)
+          val metricsList = Await.result(Unmarshal(r.entity).to[List[SampleMetrics]], 60 seconds)
           logger.debug(s"Metrics received from database: ${metricsList.toString}")
           val mapsList = fillMap(smartseqMap, metricsList)
           logger.debug(s"Metrics map created.\n$mapsList")
@@ -220,7 +220,7 @@ object Reporters {
         case Some(r) =>
           val metricsList = Unmarshal(r.entity).to[List[SampleMetrics]]
           logger.debug(s"Metrics received from database: ${metricsList.toString}")
-          val mapsList = fillMap(customMap, Await.result(metricsList, 5 seconds))
+          val mapsList = fillMap(customMap, Await.result(metricsList, 60 seconds))
           logger.debug(s"Metrics map created.\n$mapsList")
           writeMaps(mapsList = mapsList, outDir = outDir, id = setId, v = setVersion.get)
         case None => failureExit("Metrics not received from database.")
@@ -243,7 +243,7 @@ object Reporters {
     def run(): Unit = {
       val request = doFind(setId, setVersion)
       val result = request.flatMap(response => Unmarshal(response.entity).to[List[BaseJson]])
-      val metrics = Await.result(result, 5 seconds)
+      val metrics = Await.result(result, 60 seconds)
       val metrics_list = legacyExtract(metrics)
       setVersion match {
         case Some(v) => legacyWrite(metrics_list, config.outDir, setId, v)
