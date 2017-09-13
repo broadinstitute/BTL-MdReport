@@ -37,7 +37,7 @@ object Reporters {
     val json = MetricsSamplesQuery.writeJson(mq)
     val future = Request.doRequest(path, json)
     val result = future.flatMap(response => Unmarshal(response.entity).to[MetricSamples])
-    val awaited = Await.result(result, 5 seconds)
+    val awaited = Await.result(result, 60 seconds)
     val sampleList = awaited.sampleRequests.toIterator
     def makeSampleList(lb: mutable.ListBuffer[String]): List[String] = {
       @tailrec
