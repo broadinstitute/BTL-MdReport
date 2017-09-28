@@ -33,7 +33,7 @@ object MdReport extends App{
       opt[String]('S', "sampleFile").valueName("<sampleFile>").optional().action((x, c) => c.copy(sampleFile = Some(x)))
         .text("Optional input sample TSV used to initiate pipeline. Used for populating barcode in report.")
       opt[String]('t', "test").hidden().action((_, c) => c.copy(test = true))
-        .text("Enable test mode which retrieves reports from MDBeta.")
+        .text("Enable test mode which retrieves reports from test database.")
       help("help").text("Prints this help text.")
       note("\nA tool for generating reports from MD.")
     }

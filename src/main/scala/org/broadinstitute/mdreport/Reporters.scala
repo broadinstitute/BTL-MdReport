@@ -60,8 +60,9 @@ object Reporters {
     val setId: String = config.setId.get
     val setVersion: Option[Long] = config.version
     var port = 9100
-    if (config.test) port = 9101
-    val server = s"$rootPath:$port/MD"
+    var host = "btllims"
+    if (config.test) host = "GP3C5-33B"
+    val server = s"http:$host:$port/MD"
     val path = s"$server/metricsQuery"
     val sampleList: List[String] = config.sampleList.getOrElse(getSamples(setId, setVersion, server))
     val delimiter = "\t"
