@@ -60,8 +60,8 @@ object Reporters {
     val setId: String = config.setId.get
     val setVersion: Option[Long] = config.version
     var port = 9100
-    var host = "btllims"
-    if (config.test) host = "GP3C5-33B"
+    var host = "btllims.broadinstitute.org"
+    if (config.test) host = "GP3C5-33B.broadinstitute.org"
     val server = s"http:$host:$port/MD"
     val path = s"$server/metricsQuery"
     val sampleList: List[String] = config.sampleList.getOrElse(getSamples(setId, setVersion, server))
