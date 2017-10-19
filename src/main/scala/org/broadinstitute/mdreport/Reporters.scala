@@ -27,12 +27,11 @@ object Reporters {
   private implicit lazy val materializer = ActorMaterializer()
   private implicit lazy val ec = system.dispatcher
   // rootPath for production
-  //private val rootPath = "http://btllims.broadinstitute.org"
+  private val rootPath = "http://btllims.broadinstitute.org"
   // rootPath for my work localhost testing.
   // private val rootPath = "http://GP3C5-33B.broadinstitute.org"
   // rootpath for home localhost testing
   //private val rootPath = "http://osiris-pc"
-  private val rootPath = "http://wm18b-d74"
 
   def getSamples(setId: String, version: Option[Long], server: String): List[String] = {
     val path = s"$server/metricsSamplesQuery"
