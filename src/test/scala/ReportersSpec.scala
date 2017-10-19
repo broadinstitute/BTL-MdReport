@@ -125,8 +125,8 @@ class ReportersSpec extends FlatSpec with Matchers{
       case Some(r) =>
         val result = Unmarshal(r.entity).to[List[SampleMetrics]]
         val response = Await.result(result, 60 seconds)
-        val smartseq_map = new SmartSeqReporter(config).smartseqMap
-        val myMap = ssr.fillMap(smartseq_map, response)
+        val smartseq_order = new SmartSeqReporter(config).smartseqOrder
+        val myMap = ssr.makeMap(smartseq_order, response)
         ssr.writeMaps(myMap, "C:\\Dev\\Scala\\MdReport\\", config.setId.get, config.version.get)
         myMap should not contain None
       case None => None

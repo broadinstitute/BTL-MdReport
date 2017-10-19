@@ -27,11 +27,13 @@ object Reporters {
   private implicit lazy val materializer = ActorMaterializer()
   private implicit lazy val ec = system.dispatcher
   // rootPath for production
-  private val rootPath = "http://btllims.broadinstitute.org"
+  //private val rootPath = "http://btllims.broadinstitute.org"
   // rootPath for my work localhost testing.
   // private val rootPath = "http://GP3C5-33B.broadinstitute.org"
   // rootpath for home localhost testing
   //private val rootPath = "http://osiris-pc"
+  private val rootPath = "http://wm18b-d74"
+
   def getSamples(setId: String, version: Option[Long], server: String): List[String] = {
     val path = s"$server/metricsSamplesQuery"
     val mq = MetricsSamplesQuery(setId, version)
@@ -77,77 +79,77 @@ object Reporters {
       MetricsType.PicardEstimateLibraryComplexity,
       MetricsType.SampleSheet
     )
-    val smartseqMap: mutable.LinkedHashMap[String, Any] = mutable.LinkedHashMap(
-      "sampleName" -> None,
-      "SampleSheet.indexBarcode1" -> None,
-      "SampleSheet.indexBarcode2" -> None,
-      "PicardAlignmentSummaryAnalysis.PicardAlignmentSummaryMetrics.totalReads" -> None,
-      "DemultiplexedStats.pctOfMultiplexedReads" -> None,
-      "PicardAlignmentSummaryAnalysis.PicardAlignmentSummaryMetrics.meanReadLength" -> None,
-      "PicardAlignmentSummaryAnalysis.PicardAlignmentSummaryMetrics.pfReads" -> None,
-      "PicardAlignmentSummaryAnalysis.PicardAlignmentSummaryMetrics.pctPfReads" -> None,
-      "PicardAlignmentSummaryAnalysis.PicardAlignmentSummaryMetrics.pfReadsAligned" -> None,
-      "PicardAlignmentSummaryAnalysis.PicardAlignmentSummaryMetrics.pctPfReadsAligned" -> None,
-      "PicardAlignmentSummaryAnalysis.PicardAlignmentSummaryMetrics.readsAlignedInPairs" -> None,
-      "PicardAlignmentSummaryAnalysis.PicardAlignmentSummaryMetrics.pctReadsAlignedInPairs" -> None,
-      "PicardAlignmentSummaryAnalysis.PicardAlignmentSummaryMetrics.pctAdapter" -> None,
-      "PicardMeanQualByCycle.r1MeanQual" -> None,
-      "PicardMeanQualByCycle.r2MeanQual" -> None,
-      "PicardInsertSizeMetrics.pairOrientation" -> None,
-      "PicardInsertSizeMetrics.meanInsertSize" -> None,
-      "PicardInsertSizeMetrics.medianInsertSize" -> None,
-      "PicardInsertSizeMetrics.standardDeviation" -> None,
-      "PicardReadGcMetrics.meanGcContent" -> None,
-      "PicardEstimateLibraryComplexity.percentDuplication" -> None,
-      "ErccStats.totalErccReads" -> None,
-      "ErccStats.fractionErccReads" -> None,
-      "ErccStats.fractionGenomeReferenceReads" -> None,
-      "ErccStats.totalUnalignedReads" -> None,
-      "ErccStats.fractionUnalignedReads" -> None,
-      "RnaSeqQcStats.readMetrics.ReadMetrics.fragmentLengthMean" -> None,
-      "RnaSeqQcStats.readMetrics.ReadMetrics.chimericPairs" -> None,
-      "RnaSeqQcStats.readMetrics.ReadMetrics.readLength" -> None,
-      "RnaSeqQcStats.readMetrics.ReadMetrics.estimatedLibrarySize" -> None,
-      "RnaSeqQcStats.readMetrics.ReadMetrics.fragmentLengthStdDev" -> None,
-      "RnaSeqQcStats.readMetrics.ReadMetrics.expressionProfilingEfficiency" -> None,
-      "RnaSeqQcStats.readMetrics.ReadMetrics.unpairedReads" -> None,
-      "RnaSeqQcStats.readMetrics.ReadMetrics.baseMismatchRate" -> None,
-      "RnaSeqQcStats.readMetrics.ReadMetrics.transcriptsDetected" -> None,
-      "RnaSeqQcStats.readMetrics.ReadMetrics.totalPurityFilteredReadsSequenced" -> None,
-      "RnaSeqQcStats.readMetrics.ReadMetrics.failedVendorQCCheck" -> None,
-      "RnaSeqQcStats.covMetrics.CovMetrics.meanPerBaseCov" -> None,
-      "RnaSeqQcStats.covMetrics.CovMetrics.meanCV" -> None,
-      "RnaSeqQcStats.alignmentMetrics.AlignmentMetrics.mapped" -> None,
-      "RnaSeqQcStats.alignmentMetrics.AlignmentMetrics.mappedPairs" -> None,
-      "RnaSeqQcStats.alignmentMetrics.AlignmentMetrics.alternativeAlignments" -> None,
-      "RnaSeqQcStats.alignmentMetrics.AlignmentMetrics.uniqueRateofMapped" -> None,
-      "RnaSeqQcStats.alignmentMetrics.AlignmentMetrics.mappingRate" -> None,
-      "RnaSeqQcStats.alignmentMetrics.AlignmentMetrics.mappedUnique" -> None,
-      "RnaSeqQcStats.alignmentMetrics.AlignmentMetrics.end1MappingRate" -> None,
-      "RnaSeqQcStats.alignmentMetrics.AlignmentMetrics.end2MappingRate" -> None,
-      "RnaSeqQcStats.alignmentMetrics.AlignmentMetrics.mappedUniqueRateofTotal" -> None,
-      "RnaSeqQcStats.alignmentMetrics.AlignmentMetrics.duplicationRateOfMapped" -> None,
-      "RnaSeqQcStats.gapMetrics.GapMetrics.cumulGapLength" -> None,
-      "RnaSeqQcStats.gapMetrics.GapMetrics.gapPct" -> None,
-      "RnaSeqQcStats.gapMetrics.GapMetrics.numGaps" -> None,
-      "RnaSeqQcStats.annotationMetrics.AnnotationMetrics.intronicRate" -> None,
-      "RnaSeqQcStats.annotationMetrics.AnnotationMetrics.rRNA" -> None,
-      "RnaSeqQcStats.annotationMetrics.AnnotationMetrics.genesDetected" -> None,
-      "RnaSeqQcStats.annotationMetrics.AnnotationMetrics.rRNArate" -> None,
-      "RnaSeqQcStats.annotationMetrics.AnnotationMetrics.exonicRate" -> None,
-      "RnaSeqQcStats.annotationMetrics.AnnotationMetrics.intragenicRate" -> None,
-      "RnaSeqQcStats.annotationMetrics.AnnotationMetrics.intergenicRate" -> None,
-      "RnaSeqQcStats.endMetrics.EndMetrics.end1PctSense" -> None,
-      "RnaSeqQcStats.endMetrics.EndMetrics.end1Antisense" -> None,
-      "RnaSeqQcStats.endMetrics.EndMetrics.noCovered5Prime" -> None,
-      "RnaSeqQcStats.endMetrics.EndMetrics.end2MismatchRate" -> None,
-      "RnaSeqQcStats.endMetrics.EndMetrics.end2Antisense" -> None,
-      "RnaSeqQcStats.endMetrics.EndMetrics.end2PctSense" -> None,
-      "RnaSeqQcStats.endMetrics.EndMetrics.end2Sense" -> None,
-      "RnaSeqQcStats.endMetrics.EndMetrics.end1MismatchRate" -> None,
-      "RnaSeqQcStats.endMetrics.EndMetrics.end1Sense" -> None,
-      "RnaSeqQcStats.endMetrics.EndMetrics.fivePrimeNorm" -> None,
-      "RnaSeqQcStats.Notes" -> None
+    val smartseqOrder = List(
+      "sampleName",
+      "SampleSheet.indexBarcode1",
+      "SampleSheet.indexBarcode2",
+      "PicardAlignmentSummaryAnalysis.PicardAlignmentSummaryMetrics.totalReads",
+      "DemultiplexedStats.pctOfMultiplexedReads",
+      "PicardAlignmentSummaryAnalysis.PicardAlignmentSummaryMetrics.meanReadLength",
+      "PicardAlignmentSummaryAnalysis.PicardAlignmentSummaryMetrics.pfReads",
+      "PicardAlignmentSummaryAnalysis.PicardAlignmentSummaryMetrics.pctPfReads",
+      "PicardAlignmentSummaryAnalysis.PicardAlignmentSummaryMetrics.pfReadsAligned",
+      "PicardAlignmentSummaryAnalysis.PicardAlignmentSummaryMetrics.pctPfReadsAligned",
+      "PicardAlignmentSummaryAnalysis.PicardAlignmentSummaryMetrics.readsAlignedInPairs",
+      "PicardAlignmentSummaryAnalysis.PicardAlignmentSummaryMetrics.pctReadsAlignedInPairs",
+      "PicardAlignmentSummaryAnalysis.PicardAlignmentSummaryMetrics.pctAdapter",
+      "PicardMeanQualByCycle.r1MeanQual",
+      "PicardMeanQualByCycle.r2MeanQual",
+      "PicardInsertSizeMetrics.pairOrientation",
+      "PicardInsertSizeMetrics.meanInsertSize",
+      "PicardInsertSizeMetrics.medianInsertSize",
+      "PicardInsertSizeMetrics.standardDeviation",
+      "PicardReadGcMetrics.meanGcContent",
+      "PicardEstimateLibraryComplexity.percentDuplication",
+      "ErccStats.totalErccReads",
+      "ErccStats.fractionErccReads",
+      "ErccStats.fractionGenomeReferenceReads",
+      "ErccStats.totalUnalignedReads",
+      "ErccStats.fractionUnalignedReads",
+      "RnaSeqQcStats.readMetrics.ReadMetrics.fragmentLengthMean",
+      "RnaSeqQcStats.readMetrics.ReadMetrics.chimericPairs",
+      "RnaSeqQcStats.readMetrics.ReadMetrics.readLength",
+      "RnaSeqQcStats.readMetrics.ReadMetrics.estimatedLibrarySize",
+      "RnaSeqQcStats.readMetrics.ReadMetrics.fragmentLengthStdDev",
+      "RnaSeqQcStats.readMetrics.ReadMetrics.expressionProfilingEfficiency",
+      "RnaSeqQcStats.readMetrics.ReadMetrics.unpairedReads",
+      "RnaSeqQcStats.readMetrics.ReadMetrics.baseMismatchRate",
+      "RnaSeqQcStats.readMetrics.ReadMetrics.transcriptsDetected",
+      "RnaSeqQcStats.readMetrics.ReadMetrics.totalPurityFilteredReadsSequenced",
+      "RnaSeqQcStats.readMetrics.ReadMetrics.failedVendorQCCheck",
+      "RnaSeqQcStats.covMetrics.CovMetrics.meanPerBaseCov",
+      "RnaSeqQcStats.covMetrics.CovMetrics.meanCV",
+      "RnaSeqQcStats.alignmentMetrics.AlignmentMetrics.mapped",
+      "RnaSeqQcStats.alignmentMetrics.AlignmentMetrics.mappedPairs",
+      "RnaSeqQcStats.alignmentMetrics.AlignmentMetrics.alternativeAlignments",
+      "RnaSeqQcStats.alignmentMetrics.AlignmentMetrics.uniqueRateofMapped",
+      "RnaSeqQcStats.alignmentMetrics.AlignmentMetrics.mappingRate",
+      "RnaSeqQcStats.alignmentMetrics.AlignmentMetrics.mappedUnique",
+      "RnaSeqQcStats.alignmentMetrics.AlignmentMetrics.end1MappingRate",
+      "RnaSeqQcStats.alignmentMetrics.AlignmentMetrics.end2MappingRate",
+      "RnaSeqQcStats.alignmentMetrics.AlignmentMetrics.mappedUniqueRateofTotal",
+      "RnaSeqQcStats.alignmentMetrics.AlignmentMetrics.duplicationRateOfMapped",
+      "RnaSeqQcStats.gapMetrics.GapMetrics.cumulGapLength",
+      "RnaSeqQcStats.gapMetrics.GapMetrics.gapPct",
+      "RnaSeqQcStats.gapMetrics.GapMetrics.numGaps",
+      "RnaSeqQcStats.annotationMetrics.AnnotationMetrics.intronicRate",
+      "RnaSeqQcStats.annotationMetrics.AnnotationMetrics.rRNA",
+      "RnaSeqQcStats.annotationMetrics.AnnotationMetrics.genesDetected",
+      "RnaSeqQcStats.annotationMetrics.AnnotationMetrics.rRNArate",
+      "RnaSeqQcStats.annotationMetrics.AnnotationMetrics.exonicRate",
+      "RnaSeqQcStats.annotationMetrics.AnnotationMetrics.intragenicRate",
+      "RnaSeqQcStats.annotationMetrics.AnnotationMetrics.intergenicRate",
+      "RnaSeqQcStats.endMetrics.EndMetrics.end1PctSense",
+      "RnaSeqQcStats.endMetrics.EndMetrics.end1Antisense",
+      "RnaSeqQcStats.endMetrics.EndMetrics.noCovered5Prime",
+      "RnaSeqQcStats.endMetrics.EndMetrics.end2MismatchRate",
+      "RnaSeqQcStats.endMetrics.EndMetrics.end2Antisense",
+      "RnaSeqQcStats.endMetrics.EndMetrics.end2PctSense",
+      "RnaSeqQcStats.endMetrics.EndMetrics.end2Sense",
+      "RnaSeqQcStats.endMetrics.EndMetrics.end1MismatchRate",
+      "RnaSeqQcStats.endMetrics.EndMetrics.end1Sense",
+      "RnaSeqQcStats.endMetrics.EndMetrics.fivePrimeNorm",
+      "RnaSeqQcStats.Notes"
     )
     logInit(logger, "SmartSeqReporter")
     def run(): Unit = {
@@ -163,9 +165,12 @@ object Reporters {
       val query = doQuery(mq)
       query match {
         case Some(r) =>
+          //val responseStr = Unmarshal(r.entity).to[String]
           val metricsList = Await.result(Unmarshal(r.entity).to[List[SampleMetrics]], 60 seconds)
+          //val responseStr = Unmarshal(r.entity).to[String]
           logger.debug(s"Metrics received from database: ${metricsList.toString}")
-          val mapsList = fillMap(smartseqMap, metricsList)
+          //val mapsList = fillMap(smartseqMap, metricsList)
+          val mapsList = makeMap(smartseqOrder, metricsList)
           logger.debug(s"Metrics map created.\n$mapsList")
           writeMaps(mapsList = mapsList, outDir = outDir, id = setId, v = setVersion.get)
         case None => failureExit("Metrics not received from database.")

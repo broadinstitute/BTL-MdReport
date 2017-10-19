@@ -110,7 +110,7 @@ object ReporterTraits {
       val json = MetricsQuery.writeJson(mq)
       val query = Request.doRequest(path = path, json = json)
       try {
-        Some(Await.result(query, 10 seconds))
+        Some(Await.result(query, 6000 seconds))
       } catch {
         case e: TimeoutException => logger.error(e.getMessage)
           logger.info("Trying request again.")
@@ -169,6 +169,19 @@ object ReporterTraits {
         maps += lm
       }
       maps.toList
+    }
+
+    def makeMap(metricsOrder: List[String], r:List[SampleMetrics]): List[ListMap[String, Any]] = {
+      def filterAndOrderMetrics(item:List[(String,Any)])
+        = metricsOrder.map( (key) => item.find(_._1 == key).map(_._2).map((key,_)).getOrElse((key, None))) // return (key,None) if the sample missing the metric
+
+      r.map( (item) =>
+              ("sampleName", item.sampleRef.sampleID) +:                      // add ("sampleName", sampleName) to sampleMetric
+                      item.metrics.flatten(
+                          _.metric.makeValList(0, "", (k,i,v) => (k,v)))      // make a list of sampleMetric -> list of (k,v) metrics
+                      )
+        .map( (item) => filterAndOrderMetrics(item) )                         // order and filter metric row to reporting formatting
+        .map( (m) => ListMap(m.toSeq: _*) )
     }
   }
 
