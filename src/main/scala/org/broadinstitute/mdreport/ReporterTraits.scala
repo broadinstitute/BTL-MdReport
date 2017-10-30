@@ -148,25 +148,6 @@ object ReporterTraits {
   }
 
   trait MapMaker {
-    def fillMap(m: mutable.LinkedHashMap[String, Any], r: List[SampleMetrics]): List[ListMap[String, Any]] = {
-      var maps = mutable.ListBuffer[ListMap[String, Any]]()
-      for (item <- r) {
-        m("sampleName") = item.sampleRef.sampleID
-        for (x <- item.metrics) {
-          x.metric.makeValList(0, "", (k, i, v) => {
-            if (m.contains(k)) m(k) = v
-            }
-          )
-        }
-        // For some reason m mutates prior to entering into listbuffer. This converts m to immutable. Copied from:
-        // http://stackoverflow.com/questions/6199186/scala-linkedhashmap-tomap-preserves-order
-        def toMap[A, B](lhm: mutable.LinkedHashMap[A, B]): ListMap[A, B] = ListMap(lhm.toSeq: _*)
-        val lm = toMap(m)
-        maps += lm
-      }
-      maps.toList
-    }
-
     def makeMap(metricsOrder: List[String], r:List[SampleMetrics]): List[ListMap[String, Any]] = {
       def filterAndOrderMetrics(item:List[(String,Any)])
         = metricsOrder.map( (key) => item.find(_._1 == key).map(_._2).map((key,_)).getOrElse((key, None))) // return (key,None) if the sample missing the metric
