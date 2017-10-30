@@ -150,7 +150,7 @@ object ReporterTraits {
   trait MapMaker {
     def fillMap(m: mutable.LinkedHashMap[String, Any], r: List[SampleMetrics]): List[ListMap[String, Any]] = {
       var maps = mutable.ListBuffer[ListMap[String, Any]]()
-      for (item <- r.sortBy(_.sampleRef.sampleID)) {
+      for (item <- r) {
         m("sampleName") = item.sampleRef.sampleID
         for (x <- item.metrics) {
           x.metric.makeValList(0, "", (k, i, v) => {
@@ -165,6 +165,19 @@ object ReporterTraits {
         maps += lm
       }
       maps.toList
+    }
+
+    def makeMap(metricsOrder: List[String], r:List[SampleMetrics]): List[ListMap[String, Any]] = {
+      def filterAndOrderMetrics(item:List[(String,Any)])
+        = metricsOrder.map( (key) => item.find(_._1 == key).map(_._2).map((key,_)).getOrElse((key, None))) // return (key,None) if the sample missing the metric
+
+      r.sortBy(_.sampleRef.sampleID).map( (item) =>
+        ("sampleName", item.sampleRef.sampleID) +:                      // add ("sampleName", sampleName) to sampleMetric
+          item.metrics.flatten(
+            _.metric.makeValList(0, "", (k,i,v) => (k,v)))      // make a list of sampleMetric -> list of (k,v) metrics
+      )
+        .map( (item) => filterAndOrderMetrics(item) )                         // order and filter metric row to reporting formatting
+        .map( (m) => ListMap(m.toSeq: _*) )
     }
   }
 
