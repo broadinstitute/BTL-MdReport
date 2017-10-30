@@ -110,7 +110,7 @@ object ReporterTraits {
       val json = MetricsQuery.writeJson(mq)
       val query = Request.doRequest(path = path, json = json)
       try {
-        Some(Await.result(query, 10 seconds))
+        Some(Await.result(query, 10.seconds))
       } catch {
         case e: TimeoutException => logger.error(e.getMessage)
           logger.info("Trying request again.")
@@ -148,13 +148,9 @@ object ReporterTraits {
   }
 
   trait MapMaker {
-    /*TODO: Need to figure out a way to properly figure out use of index to solve situations where
-    we need to explicitly get the right totalReads(PAIR) value. Currently just relying on the right one
-    being the last one, which isn't a good idea.
-     */
     def fillMap(m: mutable.LinkedHashMap[String, Any], r: List[SampleMetrics]): List[ListMap[String, Any]] = {
       var maps = mutable.ListBuffer[ListMap[String, Any]]()
-      for (item <- r) {
+      for (item <- r.sortBy(_.sampleRef.sampleID)) {
         m("sampleName") = item.sampleRef.sampleID
         for (x <- item.metrics) {
           x.metric.makeValList(0, "", (k, i, v) => {

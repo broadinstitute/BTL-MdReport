@@ -79,6 +79,7 @@ object Reporters {
     )
     val smartseqMap: mutable.LinkedHashMap[String, Any] = mutable.LinkedHashMap(
       "sampleName" -> None,
+      "SampleSheet.organism" -> None,
       "SampleSheet.indexBarcode1" -> None,
       "SampleSheet.indexBarcode2" -> None,
       "PicardAlignmentSummaryAnalysis.PicardAlignmentSummaryMetrics.totalReads" -> None,
