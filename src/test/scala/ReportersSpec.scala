@@ -112,7 +112,7 @@ class ReportersSpec extends FlatSpec with Matchers{
     val config = Config(
       setId = Some("SSF-11680_SmartSeqAnalysisV1.1_1"),
       version = Some(1507901946874L),
-      test = true,
+      port = 9101,
       sampleList = Option(samples)
     )
     val ssr = new SmartSeqReporter(config)
@@ -139,7 +139,7 @@ class ReportersSpec extends FlatSpec with Matchers{
     val config = Config(
       setId = Some("SSF-11680_SmartSeqAnalysisV1.1_1"),
       version = Some(1507901946874L),
-      test = true,
+      port = 9101,
       sampleList = Option(List("000008534669_D05", "SSF1871D06_PeterNigrovic")),
       rdfFile = Some("C:\\Dev\\Scala\\MdReport\\src\\test\\resources\\rdf.tsv"),
       outDir = "C:\\Dev\\Scala\\MdReport\\"

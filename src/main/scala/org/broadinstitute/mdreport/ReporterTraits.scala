@@ -104,7 +104,6 @@ object ReporterTraits {
 
   trait Requester {
     val path: String
-    var port: Int // This is var because port can be reassigned if using test DB.
     var retries: Int
     def doQuery(mq: MetricsQuery): Option[HttpResponse] = {
       val json = MetricsQuery.writeJson(mq)

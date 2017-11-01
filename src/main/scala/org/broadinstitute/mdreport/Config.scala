@@ -14,5 +14,6 @@ case class Config(
                   delimiter: String = ",",
                   rdfFile: Option[String] = None,
                   sampleFile: Option[String] = None,
-                  test: Boolean = false
+                  host: String = "http://btllims.broadinstitute.org",
+                  port: Int = 9100
                  )

@@ -32,8 +32,10 @@ object MdReport extends App{
         .text("Optional report definition file for custom reports.")
       opt[String]('S', "sampleFile").valueName("<sampleFile>").optional().action((x, c) => c.copy(sampleFile = Some(x)))
         .text("Optional input sample TSV used to initiate pipeline. Used for populating barcode in report.")
-      opt[String]('t', "test").hidden().action((_, c) => c.copy(test = true))
-        .text("Enable test mode which retrieves reports from test database.")
+      opt[String]('h', "host").valueName("<host url>").optional().action((x, c) => c.copy(host = x))
+        .text("Optional. Specify database host. Default is http:\\\\btllims.broadinstitute.org.")
+      opt[Int]('p', "port").valueName("<port>").optional().action((x, c) => c.copy(port = x))
+        .text("Optional database host port. Default is 9100. Use 9101 for MdBeta.")
       help("help").text("Prints this help text.")
       note("\nA tool for generating reports from MD.")
     }

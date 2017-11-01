@@ -26,12 +26,7 @@ object Reporters {
   private implicit lazy val system = ActorSystem()
   private implicit lazy val materializer = ActorMaterializer()
   private implicit lazy val ec = system.dispatcher
-  // rootPath for production
-  private val rootPath = "http://btllims.broadinstitute.org"
-  // rootPath for my work localhost testing.
-  // private val rootPath = "http://GP3C5-33B.broadinstitute.org"
-  // rootpath for home localhost testing
-  //private val rootPath = "http://osiris-pc"
+
   def getSamples(setId: String, version: Option[Long], server: String): List[String] = {
     val path = s"$server/metricsSamplesQuery"
     val mq = MetricsSamplesQuery(setId, version)
@@ -59,9 +54,7 @@ object Reporters {
     var retries = 4
     val setId: String = config.setId.get
     val setVersion: Option[Long] = config.version
-    var port = 9100
-    if (config.test) port = 9101
-    val server = s"$rootPath:$port/MD"
+    val server = s"${config.host}:${config.port}/MD"
     val path = s"$server/metricsQuery"
     val sampleList: List[String] = config.sampleList.getOrElse(getSamples(setId, setVersion, server))
     val delimiter = "\t"
@@ -183,10 +176,8 @@ object Reporters {
     val setVersion: Option[Long] = config.version
     val delimiter: String = config.delimiter
     val outDir: String = config.outDir
-    var port = 9100
-    if (config.test) port = 9101
-    val server = s"$rootPath:$port/MD"
-    val path = s"$server/metricsQuery"
+    val server = s"${config.host}:${config.port}/MD"
+    val path = s"${config.host}:${config.port}/MD/metricsQuery"
     val sampleList: List[String] = config.sampleList.getOrElse(getSamples(setId, setVersion, server))
     val customReport: CustomReport = parseRdf(config.rdfFile.get)
     val metrics: List[MetricsType.MetricsType] = customReport.contents.keys.toList
@@ -233,11 +224,9 @@ object Reporters {
   }
 
   class LegacyReporter(config: Config) extends Requester with LegacyExtractor with Output with Log{
-    var port = 9100
     var retries = 4
     val delimiter = ","
-    if (config.test) port = 9101
-    val path = s"http://btllims.broadinstitute.org:$port/MD/find/metrics"
+    val path = s"${config.host}:${config.port}/MD/find/metrics"
     val setId: String = config.setId.get
     val setVersion: Option[Long] = config.version
     //Passing empty lists to keep logInit happy for now. Eventually may be able to populate these for legacy reporter.
