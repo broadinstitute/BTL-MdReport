@@ -148,16 +148,20 @@ object ReporterTraits {
 
   trait MapMaker {
     def makeMap(metricsOrder: List[String], r:List[SampleMetrics]): List[ListMap[String, Any]] = {
-      def filterAndOrderMetrics(item:List[(String,Any)])
+      def filterAndOrderMetrics(item:List[(String,Any)]) //reorder metrics to an given order, return (key,None) if the sample missing the metric
         = metricsOrder.map( (key) => item.find(_._1 == key).map(_._2).map((key,_)).getOrElse((key, None))) // return (key,None) if the sample missing the metric
+
+      def deduplicateTuples(items:List[(String, Any)]) //de-duplicate a list of key-value tuples, retain only the last value in sequence in case of duplicate keys
+        = items.map(_._1).map( (key) => items.reverseIterator.find(_._1 == key).getOrElse((key,None)))
 
       r.sortBy(_.sampleRef.sampleID).map( (item) =>
         ("sampleName", item.sampleRef.sampleID) +:                      // add ("sampleName", sampleName) to sampleMetric
-          item.metrics.flatten(
-            _.metric.makeValList(0, "", (k,i,v) => (k,v)))      // make a list of sampleMetric -> list of (k,v) metrics
+          deduplicateTuples(item.metrics.flatMap(
+          _.metric.makeValList(0, "", (k,i,v) => (k,v))).toList)        // convert sequence of sampleMetric -> list of (k,v) metric tuples
       )
-        .map( (item) => filterAndOrderMetrics(item) )                         // order and filter metric row to reporting formatting
-        .map( (m) => ListMap(m.toSeq: _*) )
+        .map( (item) => filterAndOrderMetrics(item) )                   // order and filter metric row to reporting formatting
+        .map( (m) => ListMap(m.toSeq: _*) )                             // syntactical sugar to convert to ListMap
+
     }
   }
 
