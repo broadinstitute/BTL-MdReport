@@ -72,7 +72,6 @@ object Reporters {
     )
     val smartseqOrder = List(
       "sampleName",
-      "SampleSheet.organism",
       "SampleSheet.indexBarcode1",
       "SampleSheet.indexBarcode2",
       "PicardAlignmentSummaryAnalysis.PicardAlignmentSummaryMetrics.totalReads",
@@ -141,7 +140,8 @@ object Reporters {
       "RnaSeqQcStats.endMetrics.EndMetrics.end1MismatchRate",
       "RnaSeqQcStats.endMetrics.EndMetrics.end1Sense",
       "RnaSeqQcStats.endMetrics.EndMetrics.fivePrimeNorm",
-      "RnaSeqQcStats.Notes"
+      "RnaSeqQcStats.Notes",
+      "SampleSheet.organism"
     )
     logInit(logger, "SmartSeqReporter")
     def run(): Unit = {
